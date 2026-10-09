@@ -1,6 +1,6 @@
 import { execSync } from "node:child_process";
 import { rmSync } from "node:fs";
-import { startLocalPg, type LocalPg } from "../../scripts/pg";
+import { startLocalPg, stopStalePg, type LocalPg } from "../../scripts/pg";
 
 const DIR = ".pgdata/test";
 let local: LocalPg | undefined;
@@ -9,7 +9,8 @@ let local: LocalPg | undefined;
 export async function setup() {
   let url = process.env.DATABASE_URL_TEST;
   if (process.env.USE_EXTERNAL_TEST_DB !== "1") {
-    rmSync(DIR, { recursive: true, force: true });
+    await stopStalePg(DIR);
+  rmSync(DIR, { recursive: true, force: true });
     local = await startLocalPg({ dir: DIR, port: 5434, database: "shipping_test", persistent: false });
     url = local.url;
   }

@@ -55,7 +55,7 @@ export default function Home() {
           className="pointer-events-none absolute inset-x-0 -top-40 -z-10 h-[520px] bg-[radial-gradient(60%_60%_at_50%_0%,color-mix(in_oklch,var(--primary)_22%,transparent),transparent)]"
         />
         <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-16 sm:py-24 lg:grid-cols-[1fr_1.1fr]">
-          <FadeIn>
+          <div>
             <p className="mb-4 inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
               <Globe2 className="size-3.5 text-primary" /> Domestic &amp; international
             </p>
@@ -75,10 +75,10 @@ export default function Home() {
               <p className="mb-2 text-sm font-medium">Track a shipment</p>
               <TrackForm />
             </div>
-          </FadeIn>
-          <FadeIn delay={0.15}>
+          </div>
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
             <HeroVisual />
-          </FadeIn>
+          </div>
         </div>
       </section>
 

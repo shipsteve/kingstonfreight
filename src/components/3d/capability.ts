@@ -2,17 +2,21 @@ export function shouldUse3D(env: { webgl: boolean; reducedMotion: boolean; width
   return env.webgl && !env.reducedMotion && env.width >= 768;
 }
 
+/** Cheap checks first: probing WebGL creates a GPU context, which is slow on low-end phones, so skip it when 3D is ruled out anyway. */
 export function detectEnv() {
-  let webgl = false;
+  const width = window.innerWidth;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reducedMotion || width < 768) return { webgl: false, reducedMotion, width };
+  return { webgl: probeWebGL(), reducedMotion, width };
+}
+
+function probeWebGL(): boolean {
   try {
     const canvas = document.createElement("canvas");
-    webgl = !!(canvas.getContext("webgl2") || canvas.getContext("webgl"));
+    const gl = canvas.getContext("webgl2") || canvas.getContext("webgl");
+    gl?.getExtension("WEBGL_lose_context")?.loseContext();
+    return !!gl;
   } catch {
-    webgl = false;
+    return false;
   }
-  return {
-    webgl,
-    reducedMotion: window.matchMedia("(prefers-reduced-motion: reduce)").matches,
-    width: window.innerWidth,
-  };
 }
