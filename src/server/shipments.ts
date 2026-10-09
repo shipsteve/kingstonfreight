@@ -16,19 +16,30 @@ export async function uniqueTrackingNumber(tx: Prisma.TransactionClient): Promis
   throw new Error("Could not allocate a tracking number");
 }
 
-/** Stripe webhook handler body. Idempotent: only the first call for an unpaid shipment does anything. */
+/**
+ * Stripe webhook handler body. Idempotent: only the first call for an unpaid shipment does anything.
+ * Payment is always recorded; the shipment is only moved to BOOKED if it was still awaiting payment
+ * (an admin may already have booked or advanced it by hand).
+ */
 export async function completeCheckout(sessionId: string, shipmentId: string): Promise<"updated" | "noop"> {
-  const updated = await db.$transaction(async (tx) => {
+  const result = await db.$transaction(async (tx) => {
     const { count } = await tx.shipment.updateMany({
-      where: { id: shipmentId, paymentStatus: "UNPAID", status: "AWAITING_PAYMENT" },
-      data: { paymentStatus: "PAID", status: "BOOKED", stripeSessionId: sessionId },
+      where: { id: shipmentId, paymentStatus: "UNPAID" },
+      data: { paymentStatus: "PAID", stripeSessionId: sessionId },
     });
     if (count !== 1) return null;
-    await tx.trackingEvent.create({ data: { shipmentId, status: "BOOKED", location: "Booking confirmed" } });
-    return tx.shipment.findUniqueOrThrow({ where: { id: shipmentId }, include: { user: true } });
+    const booked = await tx.shipment.updateMany({
+      where: { id: shipmentId, status: "AWAITING_PAYMENT" },
+      data: { status: "BOOKED" },
+    });
+    if (booked.count === 1) {
+      await tx.trackingEvent.create({ data: { shipmentId, status: "BOOKED", location: "Booking confirmed" } });
+    }
+    const shipment = await tx.shipment.findUniqueOrThrow({ where: { id: shipmentId }, include: { user: true } });
+    return { shipment, justBooked: booked.count === 1 };
   });
-  if (!updated) return "noop";
+  if (!result) return "noop";
 
-  await sendEmail({ to: updated.user.email, ...bookingConfirmedEmail(updated) });
+  if (result.justBooked) await sendEmail({ to: result.shipment.user.email, ...bookingConfirmedEmail(result.shipment) });
   return "updated";
 }

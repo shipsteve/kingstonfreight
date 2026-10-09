@@ -159,6 +159,15 @@ describe("completeCheckout", () => {
     expect(vi.mocked(sendEmail)).toHaveBeenCalledTimes(1);
   });
 
+  it("still records the payment if an admin already moved the shipment on", async () => {
+    const s = await awaitingShipment();
+    await db.shipment.update({ where: { id: s.id }, data: { status: "PICKED_UP" } });
+    expect(await completeCheckout(s.stripeSessionId!, s.id)).toBe("updated");
+    const after = await db.shipment.findUniqueOrThrow({ where: { id: s.id } });
+    expect(after).toMatchObject({ paymentStatus: "PAID", status: "PICKED_UP" });
+    expect(await db.trackingEvent.count({ where: { shipmentId: s.id } })).toBe(0);
+  });
+
   it("ignores an unknown shipment id", async () => {
     expect(await completeCheckout("cs_x", "missing")).toBe("noop");
   });

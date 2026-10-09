@@ -1,10 +1,22 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { db } from "@/server/db";
 import { seed } from "../../prisma/seed";
 import { resetDb } from "./helpers";
 
 describe("seed", () => {
   beforeEach(resetDb);
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("refuses to create an admin without ADMIN_EMAIL and ADMIN_PASSWORD", async () => {
+    vi.stubEnv("ADMIN_PASSWORD", "");
+    await expect(seed(db)).rejects.toThrow(/ADMIN_PASSWORD/);
+    expect(await db.user.count()).toBe(0);
+  });
+
+  it("refuses a short admin password", async () => {
+    vi.stubEnv("ADMIN_PASSWORD", "short");
+    await expect(seed(db)).rejects.toThrow(/at least 8/);
+  });
 
   it("creates admin, zones, full rate matrix and courier rate", async () => {
     await seed(db);

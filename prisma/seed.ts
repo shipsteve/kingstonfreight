@@ -20,8 +20,11 @@ function bandPrice(origin: ZoneKind, dest: ZoneKind, sameZone: boolean, maxKg: n
 }
 
 export async function seed(db: PrismaClient) {
-  const email = (process.env.ADMIN_EMAIL ?? "admin@example.com").toLowerCase();
-  const password = process.env.ADMIN_PASSWORD ?? "admin12345";
+  // No defaults: a seeded admin with a known password would be an open door in production.
+  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const password = process.env.ADMIN_PASSWORD;
+  if (!email || !password) throw new Error("Set ADMIN_EMAIL and ADMIN_PASSWORD before seeding");
+  if (password.length < 8) throw new Error("ADMIN_PASSWORD must be at least 8 characters");
   await db.user.upsert({
     where: { email },
     update: {},
