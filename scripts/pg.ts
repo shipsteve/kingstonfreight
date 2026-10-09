@@ -32,6 +32,8 @@ export async function startLocalPg(opts: {
 
 /** Stops a Postgres left running in `dir` by a previous run that was killed without cleanup (common on Windows). */
 export async function stopStalePg(dir: string): Promise<void> {
+  // Orphaned workers can outlive the postmaster and its pid file, so sweep them regardless.
+  if (process.platform === "win32") killOrphanWorkersWindows();
   if (!existsSync(`${dir}/postmaster.pid`)) return;
   const platform = process.platform === "win32" ? "windows" : process.platform;
   const pg_ctl = path.join(
