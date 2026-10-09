@@ -59,7 +59,7 @@ function killOrphanWorkersWindows() {
   const binDir = path.join(process.cwd(), "node_modules", "@embedded-postgres").replace(/\\/g, "/");
   const script =
     `Get-CimInstance Win32_Process -Filter "Name='postgres.exe'" | ` +
-    `Where-Object { $_.CommandLine -like '*${binDir}*' -and -not (Get-Process -Id $_.ParentProcessId -ErrorAction SilentlyContinue) } | ` +
+    `Where-Object { $_.CommandLine -like '*${binDir}*' -and $_.CommandLine -like '*--forkchild*' -and -not (Get-Process -Id $_.ParentProcessId -ErrorAction SilentlyContinue) } | ` +
     `ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }`;
   try {
     execFileSync("powershell", ["-NoProfile", "-Command", script], { stdio: "ignore" });
