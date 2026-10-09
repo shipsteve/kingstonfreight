@@ -12,6 +12,7 @@ export default defineConfig({
     globalSetup: ["tests/integration/global-setup.ts"],
     setupFiles: ["tests/integration/env.ts"],
     fileParallelism: false,
+    server: { deps: { inline: ["next-auth", "@auth/core"] } },
     testTimeout: 20000,
     hookTimeout: 120000,
   },
