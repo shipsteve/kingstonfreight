@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum ZoneKind {
+  DOMESTIC
+  INTERNATIONAL
+}
+
+enum ServiceType {
+  PARCEL
+  COURIER
+  FREIGHT
+}
+
+enum QuoteStatus {
+  PENDING_REVIEW
+  PRICED
+  ACCEPTED
+  EXPIRED
+  DECLINED
+}
+
+enum ShipmentStatus {
+  AWAITING_PAYMENT
+  BOOKED
+  PICKED_UP
+  IN_TRANSIT
+  CUSTOMS
+  OUT_FOR_DELIVERY
+  DELIVERED
+  EXCEPTION
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CARD
+  INVOICE
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+}
+
+model User {
+  id           String     @id @default(cuid())
+  email        String     @unique
+  name         String
+  passwordHash String
+  role         Role       @default(CUSTOMER)
+  company      String?
+  phone        String?
+  createdAt    DateTime   @default(now())
+  quotes       Quote[]
+  shipments    Shipment[]
+}
+
+model Zone {
+  id               String       @id @default(cuid())
+  name             String       @unique
+  kind             ZoneKind
+  postcodePrefixes String[]
+  countryCodes     String[]
+  originRates      ParcelRate[] @relation("OriginZone")
+  destRates        ParcelRate[] @relation("DestZone")
+}
+
+model ParcelRate {
+  id           String @id @default(cuid())
+  originZoneId String
+  destZoneId   String
+  maxWeightKg  Float
+  priceCents   Int
+  originZone   Zone   @relation("OriginZone", fields: [originZoneId], references: [id])
+  destZone     Zone   @relation("DestZone", fields: [destZoneId], references: [id])
+
+  @@unique([originZoneId, destZoneId, maxWeightKg])
+}
+
+model CourierRate {
+  id           String @id @default("singleton")
+  baseFeeCents Int
+  perKmCents   Int
+  maxKm        Float
+}
+
+model Quote {
+  id             String      @id @default(cuid())
+  userId         String?
+  user           User?       @relation(fields: [userId], references: [id])
+  serviceType    ServiceType
+  origin         Json
+  destination    Json
+  packages       Json
+  distanceKm     Float?
+  freightDetails Json?
+  priceCents     Int?
+  status         QuoteStatus
+  adminNote      String?
+  expiresAt      DateTime?
+  createdAt      DateTime    @default(now())
+  shipment       Shipment?
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Shipment {
+  id              String          @id @default(cuid())
+  quoteId         String          @unique
+  quote           Quote           @relation(fields: [quoteId], references: [id])
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  trackingNumber  String          @unique
+  serviceType     ServiceType
+  status          ShipmentStatus
+  priceCents      Int
+  paymentMethod   PaymentMethod
+  paymentStatus   PaymentStatus   @default(UNPAID)
+  stripeSessionId String?
+  origin          Json
+  destination     Json
+  createdAt       DateTime        @default(now())
+  events          TrackingEvent[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model TrackingEvent {
+  id          String         @id @default(cuid())
+  shipmentId  String
+  shipment    Shipment       @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  status      ShipmentStatus
+  location    String
+  countryCode String?
+  note        String?
+  createdAt   DateTime       @default(now())
+
+  @@index([shipmentId])
+}
