@@ -231,6 +231,6 @@ describe("admin actions", () => {
     await makeShipment(customer.id, "IN_TRANSIT");
     await makeShipment(customer.id, "EXCEPTION");
     await makeShipment(customer.id, "DELIVERED");
-    expect(await getAdminCounts()).toEqual({ pendingQuotes: 2, inTransit: 3, exceptions: 1 });
+    expect(await getAdminCounts()).toEqual({ pendingQuotes: 2, topUpsToReview: 0, inTransit: 3, exceptions: 1 });
   });
 });

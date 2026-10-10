@@ -7,6 +7,7 @@ export const metadata = { title: "Overview" };
 export default async function AdminHome() {
   const counts = await getAdminCounts();
   const tiles = [
+    { label: "Payments to verify", value: counts.topUpsToReview, href: "/admin/funding" },
     { label: "Quotes to price", value: counts.pendingQuotes, href: "/admin/quotes" },
     { label: "Moving now", value: counts.inTransit, href: "/admin/shipments?status=IN_TRANSIT" },
     { label: "Exceptions", value: counts.exceptions, href: "/admin/shipments?status=EXCEPTION" },

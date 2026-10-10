@@ -7,12 +7,13 @@ const MOVING: ShipmentStatus[] = ["PICKED_UP", "IN_TRANSIT", "CUSTOMS", "OUT_FOR
 
 export async function getAdminCounts() {
   await requireAdmin();
-  const [pendingQuotes, inTransit, exceptions] = await Promise.all([
+  const [pendingQuotes, topUpsToReview, inTransit, exceptions] = await Promise.all([
     db.quote.count({ where: { status: "PENDING_REVIEW" } }),
+    db.topUp.count({ where: { status: "PENDING_REVIEW" } }),
     db.shipment.count({ where: { status: { in: MOVING } } }),
     db.shipment.count({ where: { status: "EXCEPTION" } }),
   ]);
-  return { pendingQuotes, inTransit, exceptions };
+  return { pendingQuotes, topUpsToReview, inTransit, exceptions };
 }
 
 export async function listQuotesToPrice() {
@@ -67,10 +68,26 @@ export async function getPricingData() {
 
 export async function listCustomers() {
   await requireAdmin();
-  return db.user.findMany({
+  const users = await db.user.findMany({
     where: { role: "CUSTOMER" },
     orderBy: { createdAt: "desc" },
     take: 500,
     include: { _count: { select: { shipments: true, quotes: true } } },
+  });
+  const sums = await db.ledgerEntry.groupBy({
+    by: ["userId"],
+    where: { userId: { in: users.map((u) => u.id) } },
+    _sum: { amountCents: true },
+  });
+  const balance = new Map(sums.map((s) => [s.userId, s._sum.amountCents ?? 0]));
+  return users.map((u) => ({ ...u, balanceCents: balance.get(u.id) ?? 0 }));
+}
+
+export async function listTopUpsToReview() {
+  await requireAdmin();
+  return db.topUp.findMany({
+    where: { status: "PENDING_REVIEW" },
+    orderBy: { createdAt: "asc" },
+    include: { user: { select: { id: true, email: true, name: true, accountStatus: true } } },
   });
 }
