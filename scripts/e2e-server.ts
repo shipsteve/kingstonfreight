@@ -21,10 +21,14 @@ async function main() {
     ADMIN_PASSWORD: E2E_ADMIN.password,
     APP_URL: `http://localhost:${PORT}`,
     AUTH_TRUST_HOST: "true",
-    E2E_TEST_MODE: "1",
-    STRIPE_SECRET_KEY: "",
     RESEND_API_KEY: "",
     GEOCODE_PROVIDER: "off",
+    CHAIN_LOOKUP: "off",
+    BTC_ADDRESS: "bc1q-e2e-test-address",
+    LTC_ADDRESS: "ltc1q-e2e-test-address",
+    MIN_TOPUP_USD: "50",
+    COMPANY_LEGAL_NAME: "KingstonFreight LLC",
+    SUPPORT_EMAIL: "support@e2e.test",
   };
   execSync("npx prisma migrate deploy", { env, stdio: "inherit" });
   process.env.ADMIN_EMAIL = E2E_ADMIN.email;
