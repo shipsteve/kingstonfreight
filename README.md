@@ -1,4 +1,4 @@
-# ShipCo — shipping site MVP
+# KingstonFreight — shipping site
 
 Customers get instant quotes for **parcels** and **local courier**, request **freight** quotes that staff price by hand, book and pay (Stripe card, or invoice for freight), and track shipments publicly. Staff run everything from `/admin`.
 
@@ -35,7 +35,7 @@ To use a hosted database (e.g. Neon) instead, set `DATABASE_URL` to it and skip 
 | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | for seeding | First admin account |
 | `HOME_COUNTRY` | no (default `US`) | Defines "domestic" for zones and local courier |
 | `CURRENCY` | no (default `USD`) | Single currency; amounts are stored in cents |
-| `COMPANY_NAME` | no (default `ShipCo`) | Shown in header, footer, titles |
+| `COMPANY_NAME` | no (default `KingstonFreight`) | Shown in header, footer, titles |
 | `STRIPE_SECRET_KEY` | for card payments | Test key `sk_test_…` |
 | `STRIPE_WEBHOOK_SECRET` | for card payments | `whsec_…` from `stripe listen` or the dashboard endpoint |
 | `RESEND_API_KEY`, `EMAIL_FROM` | no | Without a key, emails are logged to the console |
