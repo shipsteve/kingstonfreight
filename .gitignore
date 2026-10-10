@@ -42,7 +42,6 @@ next-env.d.ts
 
 # superpowers workspace
 /.superpowers/
-!.env.example
 # embedded postgres data
 /.pgdata/
 /test-results/

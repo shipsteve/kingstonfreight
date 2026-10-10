@@ -13,7 +13,7 @@ Requires Node 20+. No Docker or installed Postgres needed: dev and tests use `em
 
 ```bash
 npm install
-cp .env.example .env          # then set AUTH_SECRET (npx auth secret), the admin login and your BTC/LTC addresses
+# create .env with the variables in the table below (at least DATABASE_URL, AUTH_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD)
 npm run db                    # terminal 1: local Postgres on :5433 (data in .pgdata/dev)
 npx prisma migrate deploy     # terminal 2: create tables
 npx prisma db seed            #             zones, rates, courier rate, admin user
@@ -35,6 +35,8 @@ Every credit and debit is a row in an append-only ledger. The balance is always 
 **Counter orders:** **Admin → Shipments → New order** records pieces, weights, contents, declared value, airport codes and departure/arrival dates. The order is either *Paid at counter* or charged to an approved customer's balance. **Print receipt** gives a branded receipt whose QR code opens the public tracking page. Counter orders email the customer a tracking link plus a **one-time claim link**; opening it while signed in adds the order to that account. Accounts aren't email-verified, so orders are never linked just because an email matches. Orders charged to a balance are linked to that account directly.
 
 ## Environment variables
+
+All settings live in a single `.env` file (git-ignored, never committed). On Vercel, enter the same keys under Project → Settings → Environment Variables. If a database password contains special characters, URL-encode it (for example `"` → `%22`).
 
 | Variable | Required | Notes |
 |---|---|---|
