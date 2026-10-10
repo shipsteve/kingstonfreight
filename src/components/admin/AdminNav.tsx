@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 
 const LINKS = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard },
-  { href: "/admin/quotes", label: "Freight quotes", icon: FileText },
+  { href: "/admin/quotes", label: "Quotes to price", icon: FileText },
   { href: "/admin/shipments", label: "Shipments", icon: Package },
   { href: "/admin/pricing", label: "Pricing", icon: Tags },
   { href: "/admin/customers", label: "Customers", icon: Users },

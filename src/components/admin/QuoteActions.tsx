@@ -8,11 +8,11 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { dollarsToCents } from "@/lib/money";
-import { declineFreightQuote, priceFreightQuote } from "@/server/actions/admin-quotes";
+import { declineQuote, priceQuote } from "@/server/actions/admin-quotes";
 
-export function FreightQuoteActions({ quoteId }: { quoteId: string }) {
+export function QuoteActions({ quoteId, suggestedCents }: { quoteId: string; suggestedCents: number | null }) {
   const router = useRouter();
-  const [price, setPrice] = useState("");
+  const [price, setPrice] = useState(suggestedCents != null ? (suggestedCents / 100).toFixed(2) : "");
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -33,7 +33,7 @@ export function FreightQuoteActions({ quoteId }: { quoteId: string }) {
         e.preventDefault();
         const cents = dollarsToCents(price);
         if (!cents) return setError("Enter a price like 1250 or 1250.00");
-        run(() => priceFreightQuote({ quoteId, priceCents: cents, note }), "Quote priced and customer emailed");
+        run(() => priceQuote({ quoteId, priceCents: cents, note }), "Quote priced and customer emailed");
       }}
     >
       <Field>
@@ -59,7 +59,7 @@ export function FreightQuoteActions({ quoteId }: { quoteId: string }) {
           disabled={pending}
           onClick={() => {
             if (!note.trim()) return setError("Add a note explaining why you're declining");
-            run(() => declineFreightQuote({ quoteId, note }), "Quote declined");
+            run(() => declineQuote({ quoteId, note }), "Quote declined");
           }}
         >
           Decline

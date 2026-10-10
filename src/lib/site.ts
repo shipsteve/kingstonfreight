@@ -2,7 +2,7 @@
 // (same names, or update the paths here) — e.g. a real shot of your warehouse, trucks, or airport hub.
 export const site = {
   name: process.env.COMPANY_NAME || "KingstonFreight",
-  tagline: "Parcels, local courier and freight — quoted in seconds, tracked to the door.",
+  tagline: "Parcels, local courier and freight — priced by our team, tracked to the door.",
   images: {
     hero: { src: "/images/airport.svg", alt: "Cargo plane taking off from an international airport runway at dusk" },
     parcels: { src: "/images/parcels.svg", alt: "Stacked parcels on a sorting conveyor" },

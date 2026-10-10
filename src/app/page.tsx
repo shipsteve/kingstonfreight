@@ -15,13 +15,13 @@ const SERVICES = [
     title: "Parcels",
     icon: Box,
     image: site.images.parcels,
-    blurb: "Boxes up to 30 kg, at home and abroad. Enter weight and size, get a price instantly, pay by card.",
+    blurb: "Boxes up to 30 kg, at home and abroad. Send us the details and we'll price it for you.",
   },
   {
     title: "Local courier",
     icon: Truck,
     image: site.images.courier,
-    blurb: "Same-day, door-to-door across town. Priced by distance the moment you ask.",
+    blurb: "Same-day, door-to-door across town, priced by distance.",
   },
   {
     title: "Freight & cargo",
@@ -38,8 +38,8 @@ const AIR_FEATURES = [
 ];
 
 const STEPS = [
-  { icon: Box, title: "Quote", text: "Tell us what you're sending and where. Parcels and courier are priced instantly." },
-  { icon: ShieldCheck, title: "Book", text: "Accept the quote and pay by card, or get invoiced for freight." },
+  { icon: Box, title: "Request a quote", text: "Tell us what you're sending and where. Our team prices it, usually within one business day." },
+  { icon: ShieldCheck, title: "Book", text: "Accept the price and pay from your prepaid account balance, funded with BTC or LTC." },
   { icon: MapPin, title: "Track", text: "Follow every scan from pickup to delivery, with email updates." },
 ];
 
@@ -112,7 +112,7 @@ export default function Home() {
                       <Icon className="size-5 text-primary" /> {title}
                     </h3>
                     <p className="text-sm text-muted-foreground">{blurb}</p>
-                    <p className="pt-2 text-sm font-medium text-primary">Get a price →</p>
+                    <p className="pt-2 text-sm font-medium text-primary">Request a quote →</p>
                   </div>
                 </TiltCard>
               </Link>
@@ -208,7 +208,7 @@ export default function Home() {
       <section className="px-4 pb-24">
         <FadeIn className="mx-auto max-w-4xl rounded-3xl bg-primary px-6 py-14 text-center text-primary-foreground shadow-xl shadow-primary/20">
           <h2 className="text-3xl font-semibold tracking-tight">Ready to ship?</h2>
-          <p className="mx-auto mt-2 max-w-md opacity-85">Get a price in seconds. No account needed until you book.</p>
+          <p className="mx-auto mt-2 max-w-md opacity-85">Request a quote today. We&apos;ll price it and email you, usually within one business day.</p>
           <Link href="/quote" className={buttonVariants({ size: "lg", variant: "secondary", className: "mt-6 h-11 px-6" })}>
             Get a quote <ArrowRight />
           </Link>

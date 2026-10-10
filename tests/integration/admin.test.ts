@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { db } from "@/server/db";
-import { declineFreightQuote, priceFreightQuote } from "@/server/actions/admin-quotes";
+import { declineQuote, priceQuote } from "@/server/actions/admin-quotes";
 import {
   deleteParcelRate,
   deleteZone,
@@ -9,9 +9,8 @@ import {
   upsertZone,
 } from "@/server/actions/admin-pricing";
 import { setPaymentStatus, updateShipmentStatus } from "@/server/actions/admin-shipments";
-import { calculatePrice } from "@/server/actions/quotes";
 import { sendEmail } from "@/server/email";
-import { getAdminCounts } from "@/server/queries/admin";
+import { getAdminCounts, listQuotesToPrice } from "@/server/queries/admin";
 import { seed } from "../../prisma/seed";
 import { laAddress, makeUser, nycAddress, parisAddress, resetDb, smallBox } from "./helpers";
 import { asUser } from "./session-mock";
@@ -71,8 +70,8 @@ describe("admin actions", () => {
     asUser(customer);
     const zone = await db.zone.findFirstOrThrow();
     const calls = [
-      priceFreightQuote({ quoteId: "x", priceCents: 100 }),
-      declineFreightQuote({ quoteId: "x", note: "no" }),
+      priceQuote({ quoteId: "x", priceCents: 100 }),
+      declineQuote({ quoteId: "x", note: "no" }),
       updateShipmentStatus({ shipmentId: "x", status: "IN_TRANSIT", location: "NYC" }),
       setPaymentStatus({ shipmentId: "x", paymentStatus: "PAID" }),
       upsertZone({ name: "Z", kind: "INTERNATIONAL", postcodePrefixes: [], countryCodes: ["BR"] }),
@@ -84,10 +83,28 @@ describe("admin actions", () => {
     for (const res of await Promise.all(calls)) expect(res).toEqual({ ok: false, error: "Not authorized" });
   });
 
-  describe("freight quotes", () => {
+  describe("quotes to price", () => {
+    it("prices a pending parcel quote too", async () => {
+      const q = await makeQuote(customer.id, "PARCEL", "PENDING_REVIEW");
+      expect((await priceQuote({ quoteId: q.id, priceCents: 2500 })).ok).toBe(true);
+      const after = await db.quote.findUniqueOrThrow({ where: { id: q.id } });
+      expect(after).toMatchObject({ status: "PRICED", priceCents: 2500 });
+      expect(after.expiresAt).not.toBeNull();
+    });
+
+    it("lists every pending quote, with a suggested price for parcels and none for freight", async () => {
+      const parcel = await makeQuote(customer.id, "PARCEL", "PENDING_REVIEW");
+      const freight = await makeQuote(customer.id, "FREIGHT", "PENDING_REVIEW");
+      await makeQuote(customer.id, "PARCEL", "PRICED");
+      const list = await listQuotesToPrice();
+      expect(list.map((q) => q.id).sort()).toEqual([parcel.id, freight.id].sort());
+      expect(list.find((q) => q.id === parcel.id)?.suggestedCents).toBeGreaterThan(0);
+      expect(list.find((q) => q.id === freight.id)?.suggestedCents).toBeNull();
+    });
+
     it("prices a pending freight quote, sets a 7 day expiry, and emails the customer", async () => {
       const q = await makeQuote(customer.id, "FREIGHT", "PENDING_REVIEW");
-      const res = await priceFreightQuote({ quoteId: q.id, priceCents: 125000, note: "Includes port fees" });
+      const res = await priceQuote({ quoteId: q.id, priceCents: 125000, note: "Includes port fees" });
       expect(res.ok).toBe(true);
       const after = await db.quote.findUniqueOrThrow({ where: { id: q.id } });
       expect(after).toMatchObject({ status: "PRICED", priceCents: 125000, adminNote: "Includes port fees" });
@@ -96,22 +113,22 @@ describe("admin actions", () => {
       expect(vi.mocked(sendEmail)).toHaveBeenCalledWith(expect.objectContaining({ to: "cust@example.com" }));
     });
 
-    it("refuses to price parcel quotes or quotes not pending review", async () => {
-      const parcel = await makeQuote(customer.id, "PARCEL", "PRICED");
-      expect((await priceFreightQuote({ quoteId: parcel.id, priceCents: 100 })).ok).toBe(false);
+    it("refuses to price quotes that are not pending review", async () => {
+      const priced = await makeQuote(customer.id, "PARCEL", "PRICED");
+      expect((await priceQuote({ quoteId: priced.id, priceCents: 100 })).ok).toBe(false);
       const pending = await makeQuote(customer.id, "FREIGHT", "PENDING_REVIEW");
-      await priceFreightQuote({ quoteId: pending.id, priceCents: 100 });
-      expect((await priceFreightQuote({ quoteId: pending.id, priceCents: 200 })).ok).toBe(false);
+      await priceQuote({ quoteId: pending.id, priceCents: 100 });
+      expect((await priceQuote({ quoteId: pending.id, priceCents: 200 })).ok).toBe(false);
     });
 
     it("rejects a non-positive price", async () => {
       const q = await makeQuote(customer.id, "FREIGHT", "PENDING_REVIEW");
-      expect((await priceFreightQuote({ quoteId: q.id, priceCents: 0 })).ok).toBe(false);
+      expect((await priceQuote({ quoteId: q.id, priceCents: 0 })).ok).toBe(false);
     });
 
     it("declines a pending freight quote", async () => {
       const q = await makeQuote(customer.id, "FREIGHT", "PENDING_REVIEW");
-      expect((await declineFreightQuote({ quoteId: q.id, note: "We don't ship hazmat" })).ok).toBe(true);
+      expect((await declineQuote({ quoteId: q.id, note: "We don't ship hazmat" })).ok).toBe(true);
       expect(await db.quote.findUniqueOrThrow({ where: { id: q.id } })).toMatchObject({
         status: "DECLINED",
         adminNote: "We don't ship hazmat",
@@ -188,10 +205,21 @@ describe("admin actions", () => {
       expect(res.ok).toBe(false);
     });
 
-    it("new courier rates apply to new quotes", async () => {
+    it("new courier rates feed the suggested price", async () => {
       await updateCourierRate({ baseFeeCents: 1000, perKmCents: 200, maxKm: 50 });
-      const res = await calculatePrice({ serviceType: "COURIER", origin: nycAddress, destination: laAddress, distanceKm: 5 });
-      expect(res).toEqual({ ok: true, data: { ok: true, priceCents: 2000 } });
+      await db.quote.create({
+        data: {
+          userId: customer.id,
+          serviceType: "COURIER",
+          origin: nycAddress,
+          destination: laAddress,
+          packages: [],
+          distanceKm: 5,
+          status: "PENDING_REVIEW",
+        },
+      });
+      const [q] = await listQuotesToPrice();
+      expect(q.suggestedCents).toBe(2000);
     });
   });
 

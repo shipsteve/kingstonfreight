@@ -1,5 +1,6 @@
 import type { Prisma, ShipmentStatus } from "@prisma/client";
 import { db } from "../db";
+import { loadPricingContext, suggestPrice } from "../rates";
 import { requireAdmin } from "../session";
 
 const MOVING: ShipmentStatus[] = ["PICKED_UP", "IN_TRANSIT", "CUSTOMS", "OUT_FOR_DELIVERY"];
@@ -14,13 +15,17 @@ export async function getAdminCounts() {
   return { pendingQuotes, inTransit, exceptions };
 }
 
-export async function listPendingFreightQuotes() {
+export async function listQuotesToPrice() {
   await requireAdmin();
-  return db.quote.findMany({
-    where: { serviceType: "FREIGHT", status: "PENDING_REVIEW" },
-    orderBy: { createdAt: "asc" },
-    include: { user: { select: { email: true, name: true } } },
-  });
+  const [quotes, ctx] = await Promise.all([
+    db.quote.findMany({
+      where: { status: "PENDING_REVIEW" },
+      orderBy: { createdAt: "asc" },
+      include: { user: { select: { email: true, name: true } } },
+    }),
+    loadPricingContext(),
+  ]);
+  return quotes.map((q) => ({ ...q, suggestedCents: suggestPrice(q, ctx) }));
 }
 
 export async function listShipments(filter: { status?: ShipmentStatus; q?: string }) {

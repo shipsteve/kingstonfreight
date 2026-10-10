@@ -8,45 +8,39 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { formatMoney } from "@/lib/money";
-import { PRICE_FAIL_MESSAGES } from "@/lib/pricing/messages";
-import { calculatePrice, createQuote } from "@/server/actions/quotes";
+import { createQuote } from "@/server/actions/quotes";
 import { AddressFields } from "./AddressFields";
 import { newDraft, saveDraft, takeDraft, toQuoteInput, type QuoteDraft, type ServiceType } from "./draft";
 import { PackageFields } from "./PackageFields";
 import { ServiceCard } from "./ServiceCard";
 
-const STEPS = ["Service", "Addresses", "Details", "Price"];
+const STEPS = ["Service", "Addresses", "Details", "Submit"];
 
 export const SERVICES: { type: ServiceType; title: string; blurb: string; icon: React.ReactNode }[] = [
   {
     type: "PARCEL",
     title: "Parcel",
-    blurb: "Boxes up to 30 kg, domestic and international. Instant price.",
+    blurb: "Boxes up to 30 kg, domestic and international.",
     icon: <Box />,
   },
   {
     type: "COURIER",
     title: "Local courier",
-    blurb: "Same-day, door to door within the city. Instant price.",
+    blurb: "Same-day, door to door within the city.",
     icon: <Truck />,
   },
   {
     type: "FREIGHT",
     title: "Freight",
-    blurb: "Pallets and containers by air, sea or road. Priced by our team.",
+    blurb: "Pallets and containers by air, sea or road.",
     icon: <Ship />,
   },
 ];
-
-type PriceState =
-  { status: "idle" | "loading" } | { status: "ok"; priceCents: number } | { status: "error"; message: string };
 
 export function QuoteStepper({ homeCountry, loggedIn }: { homeCountry: string; loggedIn: boolean }) {
   const router = useRouter();
   const [draft, setDraft] = useState<QuoteDraft>(() => newDraft(homeCountry));
   const [direction, setDirection] = useState(1);
-  const [price, setPrice] = useState<PriceState>({ status: "idle" });
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitting, startSubmit] = useTransition();
 
@@ -65,22 +59,6 @@ export function QuoteStepper({ homeCountry, loggedIn }: { homeCountry: string; l
 
   const isFreight = draft.serviceType === "FREIGHT";
 
-  useEffect(() => {
-    if (draft.step !== 3 || isFreight) return;
-    let cancelled = false;
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- show a spinner while the price loads
-    setPrice({ status: "loading" });
-    calculatePrice(toQuoteInput(draft)).then((res) => {
-      if (cancelled) return;
-      if (!res.ok) setPrice({ status: "error", message: res.error });
-      else if (!res.data.ok) setPrice({ status: "error", message: PRICE_FAIL_MESSAGES[res.data.reason] });
-      else setPrice({ status: "ok", priceCents: res.data.priceCents });
-    });
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-price only when arriving on the price step
-  }, [draft.step, isFreight]);
 
   function submit() {
     if (!loggedIn) {
@@ -245,32 +223,11 @@ export function QuoteStepper({ homeCountry, loggedIn }: { homeCountry: string; l
             {draft.step === 3 && (
               <div className="space-y-6">
                 <div className="rounded-2xl border bg-card p-8 text-center shadow-sm">
-                  {isFreight ? (
-                    <>
-                      <p className="text-lg font-medium">Our freight team will price this for you</p>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        Submit your request and we&apos;ll email you a quote, usually within one business day.
-                      </p>
-                    </>
-                  ) : price.status === "ok" ? (
-                    <>
-                      <p className="text-sm text-muted-foreground">Your price</p>
-                      <motion.p
-                        initial={{ scale: 0.9, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        className="mt-1 text-5xl font-semibold tracking-tight"
-                      >
-                        {formatMoney(price.priceCents)}
-                      </motion.p>
-                      <p className="mt-2 text-sm text-muted-foreground">Valid for 7 days once saved.</p>
-                    </>
-                  ) : price.status === "error" ? (
-                    <p role="alert" className="text-destructive">
-                      {price.message}
-                    </p>
-                  ) : (
-                    <Loader2 className="mx-auto animate-spin" aria-label="Calculating price" />
-                  )}
+                  <p className="text-lg font-medium">Our team will price this for you</p>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Submit your request and we&apos;ll email your price, usually within one business day. You pay from
+                    your account balance when you accept it.
+                  </p>
                 </div>
                 {submitError && (
                   <p role="alert" className="text-sm text-destructive">
@@ -281,9 +238,9 @@ export function QuoteStepper({ homeCountry, loggedIn }: { homeCountry: string; l
                   <Button type="button" variant="ghost" onClick={() => go(2)}>
                     <ArrowLeft /> Back
                   </Button>
-                  <Button type="button" onClick={submit} disabled={submitting || (!isFreight && price.status !== "ok")}>
+                  <Button type="button" onClick={submit} disabled={submitting}>
                     {submitting ? <Loader2 className="animate-spin" /> : null}
-                    {isFreight ? "Submit request" : "Save & book"}
+                    Submit request
                     {!loggedIn && " (log in)"}
                   </Button>
                 </div>
