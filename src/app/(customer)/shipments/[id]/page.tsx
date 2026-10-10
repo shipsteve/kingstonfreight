@@ -4,6 +4,7 @@ import { CopyButton } from "@/components/shipment/CopyButton";
 import { StatusBadge } from "@/components/shipment/StatusBadge";
 import { StatusTimeline } from "@/components/shipment/StatusTimeline";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { asAddress, shortPlace } from "@/lib/address";
 import { formatMoney } from "@/lib/money";
@@ -26,7 +27,15 @@ export default async function ShipmentPage({ params }: { params: Promise<{ id: s
             <CopyButton value={shipment.trackingNumber} />
           </div>
         </div>
-        <StatusBadge status={shipment.status} className="text-sm" />
+        <div className="flex items-center gap-2">
+          <StatusBadge status={shipment.status} className="text-sm" />
+          <Link
+            href={`/shipments/${shipment.id}/receipt`}
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            Receipt
+          </Link>
+        </div>
       </div>
 
       <Card>

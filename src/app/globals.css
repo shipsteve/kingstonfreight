@@ -222,3 +222,45 @@
     transform: none !important;
   }
 }
+
+/* Receipts (components/receipt/ReceiptView.tsx) */
+.receipt .receipt-label {
+  margin-bottom: 0.25rem;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #737373;
+}
+
+@media print {
+  @page {
+    margin: 12mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  header,
+  footer:not(.receipt footer),
+  nav,
+  .no-print,
+  [data-sonner-toaster],
+  nextjs-portal {
+    display: none !important;
+  }
+  .receipt {
+    max-width: none !important;
+    border: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+  }
+  .receipt header,
+  .receipt footer {
+    display: flex !important;
+  }
+  .receipt footer {
+    display: block !important;
+  }
+}
