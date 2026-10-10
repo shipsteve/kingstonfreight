@@ -1,7 +1,7 @@
 # Wallet Funding, Account Approval, Admin Orders & Receipts — Design Spec
 
 Date: 2026-10-10
-Status: Draft, awaiting review
+Status: Approved 2026-10-10, with amendments (manual pricing for every quote, legal pages)
 Builds on: `2026-10-09-shipping-site-mvp-design.md`
 
 ## 1. Goal
@@ -27,6 +27,9 @@ Customers prepay a USD balance with **BTC or LTC** sent to KingstonFreight's own
 | How bookings are paid | **Balance only**, for parcel, courier and freight. Stripe and freight invoicing are removed. |
 | Admin-created orders | Admin chooses **Charge customer's balance** or **Paid at counter** |
 | Order ↔ customer link | By customer email; if no account yet, the shipment is claimed when that email registers |
+| **Pricing (amendment)** | **No instant prices.** Every quote request, for parcel, courier and freight, is priced by an admin after submission (§7a) |
+| Country / currency | US / USD (unchanged) |
+| **Legal pages (amendment)** | Terms, Privacy, Refunds & Cancellations, Prohibited Items, Contact (§10a) |
 
 ## 3. Data model changes
 
@@ -136,6 +139,15 @@ The quote page shows the balance, and when booking isn't possible it shows the r
 
 **Removed**: Stripe (`stripe.ts`, webhook route, `startPayment`, Pay now button, the E2E checkout stand-in route), `STRIPE_*` env vars, and invoice wording in emails.
 
+## 7a. Quotes are priced by staff (amendment)
+
+- **Customer flow.** The quote stepper keeps its steps (service → addresses → packages/details), but the last step is **Submit request** for every service. No price is shown. Login is required to submit; the draft still survives the login redirect.
+- **Status.** Every submitted quote is **PENDING_REVIEW**, and the customer is emailed "We've received your request".
+- **Removed.** The public `calculatePrice` action and its rate limit, and instant-price wording on the landing page and stepper (copy becomes "Our team prices every shipment, usually within one business day").
+- **Admin "Quotes to price" queue.** This replaces the freight-only queue in `/admin/quotes` and shows all service types. For parcel and courier it shows a **suggested price** from the existing rate tables as a hint. The admin enters the final price and an optional note. `priceQuote` (renamed from `priceFreightQuote`) now accepts any service type. Decline is unchanged.
+- **Rate tables** stay on the admin pricing page as the source of suggested prices and of the **Use rate table** button on admin orders. Customers never see them.
+- **Flow after pricing.** The customer gets the "Your quote is ready" email (now for all services) → accepts within 7 days → balance debit (§7).
+
 ## 8. Admin orders `/admin/shipments/new`
 
 Form sections:
@@ -175,6 +187,24 @@ Form sections:
 - `PublicTracking` adds `departureDate`, `estimatedArrival`, `transportMode`, `departurePort`, `arrivalPort`. Still no names, street lines, phones, emails, prices or weights.
 - The tracking page, dashboard and shipment page show "Departs <date> · Estimated arrival <date>" when set.
 
+## 10a. Legal pages (amendment)
+
+- **Routes**: `/terms`, `/privacy`, `/refunds` (refunds & cancellations, including how prepaid balances and cancelled shipments are refunded to balance), `/prohibited-items`, `/contact` (about + contact details).
+- **Content.** Plain-language templates written for a US shipping business that holds prepaid crypto-funded balances. They are filled from settings, so there is no hard-coded company data:
+
+  | Variable | Example |
+  |---|---|
+  | `COMPANY_LEGAL_NAME` | KingstonFreight LLC |
+  | `COMPANY_ADDRESS` | street, city, state, ZIP |
+  | `SUPPORT_EMAIL` | support@… |
+  | `SUPPORT_PHONE` | optional |
+  | `GOVERNING_STATE` | e.g. New York |
+
+  Each page shows "Last updated <date>".
+- **Sign-up** requires ticking "I agree to the Terms of Service and Privacy Policy" (links open in new tabs). `User.termsAcceptedAt` is recorded.
+- **Footer** links to all five pages. The wallet page links to the Refunds page.
+- **Review.** The README tells the owner the templates are a starting point and must be reviewed by a lawyer. The pages themselves contain no "template" wording.
+
 ## 11. Security & integrity
 
 - All money is integer cents. The ledger is append-only, and every admin money action records `createdById` / `reviewedById`.
@@ -201,6 +231,7 @@ The model is ready for it:
 | `CHAIN_LOOKUP` | on (`off` in tests/E2E) | Enables explorer and price calls |
 
 A coin whose address isn't set is hidden from the wallet page.
+The legal-page variables in §10a also live here.
 
 ## 14. Testing
 
@@ -210,6 +241,9 @@ A coin whose address isn't set is hidden from the wallet page.
   - Receipt QR URL.
   - Date validation.
 - **Integration**
+  - Every quote type is created PENDING_REVIEW with no price.
+  - `priceQuote` prices parcel, courier and freight.
+  - Registration requires terms acceptance and stores `termsAcceptedAt`.
   - Ledger balance math.
   - Booking with insufficient balance fails; concurrent bookings cannot overspend (`Promise.all`).
   - A PENDING account cannot book; a SUSPENDED account cannot book or top up.
@@ -220,12 +254,12 @@ A coin whose address isn't set is hidden from the wallet page.
   - Every new admin action denied to customers.
   - Public tracking still leaks no PII.
 - **E2E**
-  1. Register → wallet → submit top-up → admin approves in the funding queue → customer books a parcel → balance reduced → track.
+  1. Register (accepting terms) → wallet → submit top-up → admin approves in the funding queue → customer submits a parcel quote → admin prices it → customer accepts → balance reduced → track.
   2. Admin creates an order (counter) with dates → prints the receipt → the QR target URL opens tracking showing the dates.
 
 ## 15. Out of scope
 
-NOWPayments (§12), withdrawals/refunds to crypto, other coins, payment screenshot uploads, multi-currency balances, automated low-balance emails, carrier-format labels (FedEx/USPS barcodes), commercial invoices.
+Instant/automatic customer pricing (removed by amendment), password reset and email verification (recommended before launch, not requested yet), NOWPayments (§12), withdrawals/refunds to crypto, other coins, payment screenshot uploads, multi-currency balances, automated low-balance emails, carrier-format labels (FedEx/USPS barcodes), commercial invoices.
 
 ## 16. Compliance note
 
