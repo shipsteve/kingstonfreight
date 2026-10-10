@@ -1,4 +1,4 @@
-import type { ServiceType, ShipmentStatus } from "@prisma/client";
+import type { ServiceType, ShipmentStatus, TransportMode } from "@prisma/client";
 import { asAddress } from "@/lib/address";
 import { isTrackingNumber, normalizeTrackingNumber } from "@/lib/tracking/number";
 import { db } from "./db";
@@ -10,6 +10,11 @@ export type PublicTracking = {
   origin: { city: string; countryCode: string; lat: number | null; lng: number | null };
   destination: { city: string; countryCode: string; lat: number | null; lng: number | null };
   events: { status: ShipmentStatus; location: string; countryCode: string | null; note: string | null; createdAt: Date }[];
+  transportMode: TransportMode | null;
+  departurePort: string | null;
+  arrivalPort: string | null;
+  departureDate: Date | null;
+  estimatedArrival: Date | null;
 };
 
 /** Public lookup: only city + country, never price or contact details. */
@@ -29,6 +34,11 @@ export async function getPublicTracking(raw: string): Promise<PublicTracking | n
       originLng: true,
       destLat: true,
       destLng: true,
+      transportMode: true,
+      departurePort: true,
+      arrivalPort: true,
+      departureDate: true,
+      estimatedArrival: true,
       events: {
         orderBy: { createdAt: "asc" },
         select: { status: true, location: true, countryCode: true, note: true, createdAt: true },
@@ -48,5 +58,10 @@ export async function getPublicTracking(raw: string): Promise<PublicTracking | n
     origin: place(s.origin, s.originLat, s.originLng),
     destination: place(s.destination, s.destLat, s.destLng),
     events: s.events,
+    transportMode: s.transportMode,
+    departurePort: s.departurePort,
+    arrivalPort: s.arrivalPort,
+    departureDate: s.departureDate,
+    estimatedArrival: s.estimatedArrival,
   };
 }

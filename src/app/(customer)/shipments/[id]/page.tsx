@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CopyButton } from "@/components/shipment/CopyButton";
+import { ScheduleLine } from "@/components/shipment/ScheduleLine";
 import { StatusBadge } from "@/components/shipment/StatusBadge";
 import { StatusTimeline } from "@/components/shipment/StatusTimeline";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +45,14 @@ export default async function ShipmentPage({ params }: { params: Promise<{ id: s
             <p className="text-lg">
               {shortPlace(asAddress(shipment.origin))} → {shortPlace(asAddress(shipment.destination))}
             </p>
+            <ScheduleLine
+              className="mt-1"
+              departureDate={shipment.departureDate}
+              estimatedArrival={shipment.estimatedArrival}
+              transportMode={shipment.transportMode}
+              departurePort={shipment.departurePort}
+              arrivalPort={shipment.arrivalPort}
+            />
             <p className="text-sm text-muted-foreground">
               {formatMoney(shipment.priceCents)} ·{" "}
               {shipment.paymentMethod === "BALANCE" ? "Account balance" : "Paid at counter"}{" "}

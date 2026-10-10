@@ -1,5 +1,6 @@
 import { ArrowRight, Package } from "lucide-react";
 import Link from "next/link";
+import { ScheduleLine } from "@/components/shipment/ScheduleLine";
 import { QuoteStatusBadge, StatusBadge } from "@/components/shipment/StatusBadge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -65,6 +66,12 @@ export default async function DashboardPage() {
                       <p className="text-sm text-muted-foreground">
                         {shortPlace(asAddress(s.origin))} → {shortPlace(asAddress(s.destination))}
                       </p>
+                      <ScheduleLine
+                        className="mt-1 text-muted-foreground"
+                        departureDate={s.departureDate}
+                        estimatedArrival={s.estimatedArrival}
+                        transportMode={s.transportMode}
+                      />
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-sm text-muted-foreground">{SERVICE_LABEL[s.serviceType]}</span>

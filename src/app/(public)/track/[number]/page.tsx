@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { ScheduleLine } from "@/components/shipment/ScheduleLine";
 import { StatusBadge } from "@/components/shipment/StatusBadge";
 import { StatusTimeline } from "@/components/shipment/StatusTimeline";
 import { TrackForm } from "@/components/track/TrackForm";
@@ -42,6 +43,14 @@ export default async function TrackingPage({ params }: { params: Promise<{ numbe
             <p className="font-mono text-sm text-muted-foreground">{t.trackingNumber}</p>
             <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">{STATUS_LABELS[t.status]}</h1>
             {latest && <p className="mt-1 text-muted-foreground">Last seen: {latest.location}</p>}
+            <ScheduleLine
+              className="mt-3"
+              departureDate={t.departureDate}
+              estimatedArrival={t.estimatedArrival}
+              transportMode={t.transportMode}
+              departurePort={t.departurePort}
+              arrivalPort={t.arrivalPort}
+            />
             <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
               <StatusBadge status={t.status} />
               <span className="text-muted-foreground">{SERVICE_LABEL[t.serviceType]}</span>

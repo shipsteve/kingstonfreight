@@ -66,10 +66,42 @@ describe("getPublicTracking", () => {
     expect(t?.destination).toEqual({ city: "Paris", countryCode: "FR", lat: 48.86, lng: 2.35 });
   });
 
-  it("exposes no price, names, phone numbers, street lines or emails", async () => {
-    await shipment("IN_TRANSIT");
+  it("includes schedule dates, mode and ports", async () => {
+    const s = await shipment("IN_TRANSIT");
+    await db.shipment.update({
+      where: { id: s.id },
+      data: {
+        transportMode: "AIR",
+        departurePort: "JFK",
+        arrivalPort: "CDG",
+        departureDate: new Date("2026-10-21T12:00:00Z"),
+        estimatedArrival: new Date("2026-10-23T12:00:00Z"),
+      },
+    });
+    const t = await getPublicTracking("SHP-ABCD234567");
+    expect(t).toMatchObject({ transportMode: "AIR", departurePort: "JFK", arrivalPort: "CDG" });
+    expect(t?.estimatedArrival?.toISOString()).toBe("2026-10-23T12:00:00.000Z");
+  });
+
+  it("exposes no price, names, phone numbers, street lines, emails, weights or contents", async () => {
+    const s = await shipment("IN_TRANSIT");
+    await db.shipment.update({
+      where: { id: s.id },
+      data: {
+        customerEmail: "secret@example.com",
+        contents: "Jewellery",
+        declaredValueCents: 999999,
+        actualWeightKg: 5,
+        chargeableWeightKg: 6,
+        packages: [{ weightKg: 5, lengthCm: 1, widthCm: 1, heightCm: 1, qty: 1 }],
+      },
+    });
     const json = JSON.stringify(await getPublicTracking("SHP-ABCD234567"));
-    expect(json).not.toMatch(/"(priceCents|name|phone|line1|line2|email|postcode|userId)"/);
+    expect(json).not.toMatch(
+      /"(priceCents|name|phone|line1|line2|email|postcode|userId|customerEmail|contents|declaredValueCents|actualWeightKg|chargeableWeightKg|packages|weightKg)"/,
+    );
+    expect(json).not.toContain("secret@example.com");
+    expect(json).not.toContain("Jewellery");
     expect(json).not.toContain("Ann Sender");
     expect(json).not.toContain("555");
   });
