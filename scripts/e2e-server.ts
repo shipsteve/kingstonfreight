@@ -24,6 +24,7 @@ async function main() {
     E2E_TEST_MODE: "1",
     STRIPE_SECRET_KEY: "",
     RESEND_API_KEY: "",
+    GEOCODE_PROVIDER: "off",
   };
   execSync("npx prisma migrate deploy", { env, stdio: "inherit" });
   process.env.ADMIN_EMAIL = E2E_ADMIN.email;

@@ -188,17 +188,19 @@
   }
 }
 
-/* Scroll reveal (see components/motion/Reveal.tsx). Hidden only once JS has marked <html class="js">. */
+/* Scroll reveal (see components/motion/Reveal.tsx). Hidden only when scripting runs, so no-JS visitors see everything. */
 [data-reveal],
 [data-reveal-group] > * {
   transition:
     opacity 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) var(--reveal-delay, 0s),
     transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) var(--reveal-delay, 0s);
 }
-html.js [data-reveal]:not([data-revealed]),
-html.js [data-reveal-group]:not([data-revealed]) > * {
-  opacity: 0;
-  transform: translateY(24px);
+@media (scripting: enabled) {
+  [data-reveal]:not([data-revealed]),
+  [data-reveal-group]:not([data-revealed]) > * {
+    opacity: 0;
+    transform: translateY(24px);
+  }
 }
 [data-reveal-group] > :nth-child(2) {
   --reveal-delay: 0.12s;
@@ -214,9 +216,9 @@ html.js [data-reveal-group]:not([data-revealed]) > * {
   [data-reveal-group] > * {
     transition: none;
   }
-  html.js [data-reveal]:not([data-revealed]),
-  html.js [data-reveal-group]:not([data-revealed]) > * {
-    opacity: 1;
-    transform: none;
+  [data-reveal]:not([data-revealed]),
+  [data-reveal-group]:not([data-revealed]) > * {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

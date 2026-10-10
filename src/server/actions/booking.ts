@@ -5,7 +5,8 @@ import { sendEmail } from "../email";
 import { bookingConfirmedEmail } from "../email-templates";
 import { fail, ok, type ActionResult } from "../result";
 import { requireUser } from "../session";
-import { uniqueTrackingNumber } from "../shipments";
+import { asAddress } from "@/lib/address";
+import { attachCoordinates, uniqueTrackingNumber } from "../shipments";
 import { createCheckoutSession } from "../stripe";
 import { guarded } from "./guard";
 
@@ -62,6 +63,7 @@ export async function acceptQuote(
     });
 
     if (!shipment) return fail(await whyNotAcceptable(quoteId, user.id));
+    await attachCoordinates(shipment.id, asAddress(shipment.origin), asAddress(shipment.destination));
 
     if (shipment.paymentMethod === "INVOICE") {
       await sendEmail({ to: user.email, ...bookingConfirmedEmail(shipment) });

@@ -39,6 +39,8 @@ To use a hosted database (e.g. Neon) instead, set `DATABASE_URL` to it and skip 
 | `STRIPE_SECRET_KEY` | for card payments | Test key `sk_test_…` |
 | `STRIPE_WEBHOOK_SECRET` | for card payments | `whsec_…` from `stripe listen` or the dashboard endpoint |
 | `RESEND_API_KEY`, `EMAIL_FROM` | no | Without a key, emails are logged to the console |
+| `TRUST_PROXY` | self-hosted behind a proxy | `1` to read the client IP from the proxy's `x-forwarded-for` hop. Vercel is detected automatically. Without either, forwarding headers are ignored (they can be forged) and all visitors share one rate-limit bucket |
+| `GEOCODE_PROVIDER` | no (default `nominatim`) | Looks up origin/destination cities for the tracking globe via OpenStreetMap Nominatim, sending only city + country. `off` uses country centres |
 | `DATABASE_URL_TEST` | no | Only with `USE_EXTERNAL_TEST_DB=1`; otherwise tests start their own Postgres |
 
 `CURRENCY`, `HOME_COUNTRY` and `COMPANY_NAME` are baked into the client bundle at build time, so rebuild after changing them.
@@ -75,6 +77,7 @@ The landing page illustrations live in `public/images/` (`airport`, `parcels`, `
 
 ## Known MVP limits
 
-- Rate limiting on `/track` is in-memory per server instance. Use Upstash/Redis when scaling out.
+- Rate limits (tracking 60/min, instant price 60/min, sign-up 5/15 min, login 10/15 min per IP) are in-memory per server instance. Use Upstash/Redis when scaling out.
+- City lookups use the public Nominatim service (fine at booking volume; its policy allows ~1 request/second). For heavy traffic, switch to a paid geocoder.
 - Local courier distance is entered by the customer (no maps API yet).
 - No label printing, customs documents, carrier APIs, multi-currency, refunds UI or invoice PDFs.

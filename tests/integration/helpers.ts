@@ -1,6 +1,8 @@
 import { db } from "@/server/db";
+import { resetRateLimits } from "@/server/rate-limit";
 
 export async function resetDb() {
+  resetRateLimits();
   await db.$executeRawUnsafe(
     'TRUNCATE "TrackingEvent", "Shipment", "Quote", "ParcelRate", "CourierRate", "Zone", "User" RESTART IDENTITY CASCADE',
   );

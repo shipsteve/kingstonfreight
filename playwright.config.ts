@@ -8,6 +8,7 @@ export default defineConfig({
   workers: 1,
   retries: 0,
   reporter: [["list"]],
+  globalTeardown: "./tests/e2e/global-teardown.ts",
   use: {
     baseURL: "http://localhost:3200",
     trace: "retain-on-failure",

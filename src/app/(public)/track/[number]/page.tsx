@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { StatusBadge } from "@/components/shipment/StatusBadge";
 import { StatusTimeline } from "@/components/shipment/StatusTimeline";
@@ -7,6 +6,7 @@ import { TrackingGlobe } from "@/components/track/TrackingGlobe";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { shortPlace } from "@/lib/address";
 import { STATUS_LABELS } from "@/lib/tracking/labels";
+import { clientIp } from "@/server/client-ip";
 import { rateLimit } from "@/server/rate-limit";
 import { getPublicTracking } from "@/server/tracking";
 
@@ -16,7 +16,7 @@ const SERVICE_LABEL = { PARCEL: "Parcel", COURIER: "Local courier", FREIGHT: "Fr
 
 export default async function TrackingPage({ params }: { params: Promise<{ number: string }> }) {
   const { number } = await params;
-  const ip = (await headers()).get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const ip = await clientIp();
 
   if (!rateLimit(`track:${ip}`, 60, 60_000)) {
     return (
@@ -71,11 +71,7 @@ export default async function TrackingPage({ params }: { params: Promise<{ numbe
             </CardContent>
           </Card>
         </div>
-        <TrackingGlobe
-          originCountry={t.origin.countryCode}
-          destinationCountry={t.destination.countryCode}
-          currentCountry={[...t.events].reverse().find((e) => e.countryCode)?.countryCode ?? null}
-        />
+        <TrackingGlobe tracking={t} />
       </div>
     </main>
   );

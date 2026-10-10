@@ -38,6 +38,14 @@ describe("quotes", () => {
     expect(res).toEqual({ ok: true, data: { ok: true, priceCents: 1500 + 10 * 150 } });
   });
 
+  it("rate-limits instant pricing per IP", async () => {
+    for (let i = 0; i < 60; i++) expect((await calculatePrice(parcelInput)).ok).toBe(true);
+    expect(await calculatePrice(parcelInput)).toEqual({
+      ok: false,
+      error: "Too many requests. Please wait a minute and try again.",
+    });
+  });
+
   it("refuses to auto-price freight", async () => {
     expect(await calculatePrice(freightInput)).toEqual({ ok: false, error: "Freight is priced manually" });
   });

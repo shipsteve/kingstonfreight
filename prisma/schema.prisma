@@ -131,6 +131,11 @@ model Shipment {
   stripeSessionId String?
   origin          Json
   destination     Json
+  // Geocoded city positions for the tracking globe; null → fall back to country centroid.
+  originLat       Float?
+  originLng       Float?
+  destLat         Float?
+  destLng         Float?
   createdAt       DateTime        @default(now())
   events          TrackingEvent[]
 

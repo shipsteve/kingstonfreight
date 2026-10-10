@@ -1,8 +1,19 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { db } from "@/server/db";
-import { registerUser } from "@/server/actions/auth";
+import { loginAction, registerUser } from "@/server/actions/auth";
 import { authorizeCredentials } from "@/server/auth-credentials";
 import { resetDb } from "./helpers";
+
+// signIn needs a live Next request; stand in with "wrong password" so the login rate limit can be exercised.
+vi.mock("@/server/auth", async () => {
+  const { CredentialsSignin } = await import("next-auth");
+  return {
+    signIn: vi.fn(async () => {
+      throw new CredentialsSignin();
+    }),
+    signOut: vi.fn(),
+  };
+});
 
 describe("registerUser", () => {
   beforeEach(resetDb);
@@ -26,6 +37,28 @@ describe("registerUser", () => {
     const res = await registerUser({ name: "Ann", email: "ann@example.com", password: "short" });
     expect(res.ok).toBe(false);
     expect(await db.user.count()).toBe(0);
+  });
+});
+
+describe("rate limits", () => {
+  beforeEach(resetDb);
+
+  it("blocks a sixth sign-up from the same IP within 15 minutes", async () => {
+    for (let i = 0; i < 5; i++) {
+      expect((await registerUser({ name: "A", email: `a${i}@example.com`, password: "password123" })).ok).toBe(true);
+    }
+    expect(await registerUser({ name: "A", email: "a6@example.com", password: "password123" })).toEqual({
+      ok: false,
+      error: "Too many attempts. Please try again in a few minutes.",
+    });
+  });
+
+  it("blocks repeated login attempts from the same IP", async () => {
+    for (let i = 0; i < 10; i++) await loginAction({ email: "x@example.com", password: "wrong-password" });
+    expect(await loginAction({ email: "x@example.com", password: "wrong-password" })).toEqual({
+      ok: false,
+      error: "Too many attempts. Please try again in a few minutes.",
+    });
   });
 });
 

@@ -52,10 +52,18 @@ describe("getPublicTracking", () => {
     expect(t).toMatchObject({
       status: "IN_TRANSIT",
       serviceType: "PARCEL",
-      origin: { city: "New York", countryCode: "US" },
-      destination: { city: "Paris", countryCode: "FR" },
+      origin: { city: "New York", countryCode: "US", lat: null, lng: null },
+      destination: { city: "Paris", countryCode: "FR", lat: null, lng: null },
     });
     expect(t?.events.map((e) => e.status)).toEqual(["BOOKED", "IN_TRANSIT"]);
+  });
+
+  it("includes city coordinates when the shipment has them", async () => {
+    const s = await shipment("IN_TRANSIT");
+    await db.shipment.update({ where: { id: s.id }, data: { originLat: 40.71, originLng: -74, destLat: 48.86, destLng: 2.35 } });
+    const t = await getPublicTracking("SHP-ABCD234567");
+    expect(t?.origin).toEqual({ city: "New York", countryCode: "US", lat: 40.71, lng: -74 });
+    expect(t?.destination).toEqual({ city: "Paris", countryCode: "FR", lat: 48.86, lng: 2.35 });
   });
 
   it("exposes no price, names, phone numbers, street lines or emails", async () => {

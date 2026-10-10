@@ -15,3 +15,8 @@ export function rateLimit(key: string, limit: number, windowMs: number): boolean
   }
   return true;
 }
+
+/** Test helper: forget all buckets. */
+export function resetRateLimits() {
+  hits.clear();
+}

@@ -6,8 +6,10 @@ import { PRICE_FAIL_MESSAGES } from "@/lib/pricing/messages";
 import { priceParcel } from "@/lib/pricing/parcel";
 import type { PriceResult } from "@/lib/pricing/types";
 import { quoteInputSchema, type ParsedQuoteInput, type QuoteInput } from "@/lib/quote-schema";
+import { clientIp } from "../client-ip";
 import { db } from "../db";
 import { fail, ok, type ActionResult } from "../result";
+import { rateLimit } from "../rate-limit";
 import { loadPricingContext } from "../rates";
 import { getCurrentUser, requireUser } from "../session";
 import { guarded } from "./guard";
@@ -20,6 +22,7 @@ async function priceInput(input: ParsedQuoteInput): Promise<PriceResult | null> 
 }
 
 export async function calculatePrice(input: QuoteInput): Promise<ActionResult<PriceResult>> {
+  if (!rateLimit(`price:${await clientIp()}`, 60, 60_000)) return fail("Too many requests. Please wait a minute and try again.");
   const parsed = quoteInputSchema.safeParse(input);
   if (!parsed.success) return fail(parsed.error.issues[0].message);
   const price = await priceInput(parsed.data);

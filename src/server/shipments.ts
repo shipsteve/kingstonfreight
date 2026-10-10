@@ -3,6 +3,7 @@ import { generateTrackingNumber } from "@/lib/tracking/number";
 import { db } from "./db";
 import { sendEmail } from "./email";
 import { bookingConfirmedEmail } from "./email-templates";
+import { geocodeCity } from "./geocode";
 
 /**
  * Picks a tracking number not yet in use. Checked inside the caller's transaction rather than
@@ -42,4 +43,22 @@ export async function completeCheckout(sessionId: string, shipmentId: string): P
 
   if (result.justBooked) await sendEmail({ to: result.shipment.user.email, ...bookingConfirmedEmail(result.shipment) });
   return "updated";
+}
+
+/** Best effort: store city coordinates for the tracking globe. Never throws; missing ones fall back to centroids. */
+export async function attachCoordinates(
+  shipmentId: string,
+  origin: { city: string; countryCode: string },
+  destination: { city: string; countryCode: string },
+): Promise<void> {
+  try {
+    const [o, d] = await Promise.all([geocodeCity(origin), geocodeCity(destination)]);
+    if (!o && !d) return;
+    await db.shipment.update({
+      where: { id: shipmentId },
+      data: { originLat: o?.lat, originLng: o?.lng, destLat: d?.lat, destLng: d?.lng },
+    });
+  } catch (e) {
+    console.warn("[geocode] could not store coordinates", e);
+  }
 }

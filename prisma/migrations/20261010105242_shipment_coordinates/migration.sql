@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Shipment" ADD COLUMN     "destLat" DOUBLE PRECISION,
+ADD COLUMN     "destLng" DOUBLE PRECISION,
+ADD COLUMN     "originLat" DOUBLE PRECISION,
+ADD COLUMN     "originLng" DOUBLE PRECISION;

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { db } from "@/server/db";
 import { acceptQuote, startPayment } from "@/server/actions/booking";
 import { sendEmail } from "@/server/email";
+import { geocodeCity } from "@/server/geocode";
 import { completeCheckout } from "@/server/shipments";
 import { createCheckoutSession } from "@/server/stripe";
 import { makeUser, nycAddress, parisAddress, resetDb, smallBox } from "./helpers";
@@ -15,6 +16,11 @@ vi.mock("@/server/stripe", () => ({
   })),
 }));
 vi.mock("@/server/email", () => ({ sendEmail: vi.fn(async () => {}) }));
+vi.mock("@/server/geocode", () => ({
+  geocodeCity: vi.fn(async ({ city }: { city: string }) =>
+    city === "New York" ? { lat: 40.71, lng: -74.0 } : city === "Paris" ? { lat: 48.86, lng: 2.35 } : null,
+  ),
+}));
 
 const DAY = 86_400_000;
 
@@ -42,6 +48,9 @@ describe("acceptQuote", () => {
   beforeEach(async () => {
     await resetDb();
     vi.clearAllMocks();
+    vi.mocked(geocodeCity).mockImplementation(async ({ city }) =>
+      city === "New York" ? { lat: 40.71, lng: -74.0 } : city === "Paris" ? { lat: 48.86, lng: 2.35 } : null,
+    );
     ann = await makeUser("ann@example.com");
     asUser(ann);
   });
@@ -83,6 +92,24 @@ describe("acceptQuote", () => {
     expect(shipment.events.map((e) => e.status)).toEqual(["BOOKED"]);
     expect(vi.mocked(sendEmail)).toHaveBeenCalledTimes(1);
     expect(vi.mocked(createCheckoutSession)).not.toHaveBeenCalled();
+  });
+
+  it("stores geocoded city positions for the tracking globe", async () => {
+    const quote = await makeQuote(ann.id);
+    const res = await acceptQuote(quote.id);
+    if (!res.ok) throw new Error(res.error);
+    const s = await db.shipment.findUniqueOrThrow({ where: { id: res.data.shipmentId } });
+    expect(s).toMatchObject({ originLat: 40.71, originLng: -74.0, destLat: 48.86, destLng: 2.35 });
+  });
+
+  it("still books when geocoding fails", async () => {
+    vi.mocked(geocodeCity).mockResolvedValue(null);
+    const quote = await makeQuote(ann.id);
+    const res = await acceptQuote(quote.id);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    const s = await db.shipment.findUniqueOrThrow({ where: { id: res.data.shipmentId } });
+    expect(s.originLat).toBeNull();
   });
 
   it("creates exactly one shipment when accepted twice in a row", async () => {
