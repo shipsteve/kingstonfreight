@@ -10,7 +10,7 @@ export function Footer() {
           <Logo />
           <p className="text-sm text-muted-foreground">{site.tagline}</p>
         </div>
-        <nav aria-label="Footer" className="grid grid-cols-2 gap-x-10 gap-y-2 text-sm">
+        <nav aria-label="Footer" className="grid grid-cols-2 gap-x-10 gap-y-2 text-sm sm:grid-cols-3">
           <Link href="/quote" className="hover:underline">
             Get a quote
           </Link>
@@ -22,6 +22,21 @@ export function Footer() {
           </Link>
           <Link href="/register" className="hover:underline">
             Create account
+          </Link>
+          <Link href="/contact" className="hover:underline">
+            Contact
+          </Link>
+          <Link href="/terms" className="hover:underline">
+            Terms of Service
+          </Link>
+          <Link href="/privacy" className="hover:underline">
+            Privacy Policy
+          </Link>
+          <Link href="/refunds" className="hover:underline">
+            Refunds
+          </Link>
+          <Link href="/prohibited-items" className="hover:underline">
+            Prohibited items
           </Link>
         </nav>
       </div>

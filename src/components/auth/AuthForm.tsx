@@ -22,7 +22,13 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: st
     setError(null);
     startTransition(async () => {
       const res = isRegister
-        ? await registerAndLogin({ name: String(form.get("name") ?? ""), email, password, next })
+        ? await registerAndLogin({
+            name: String(form.get("name") ?? ""),
+            email,
+            password,
+            acceptTerms: form.get("acceptTerms") === "on",
+            next,
+          })
         : await loginAction({ email, password, next });
       if (res && !res.ok) setError(res.error);
     });
@@ -60,6 +66,28 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: st
                 required
               />
             </Field>
+            {isRegister && (
+              <label className="flex items-start gap-2 text-sm">
+                <input
+                  id="acceptTerms"
+                  name="acceptTerms"
+                  type="checkbox"
+                  required
+                  className="mt-0.5 size-4 accent-primary"
+                />
+                <span>
+                  I agree to the{" "}
+                  <Link href="/terms" target="_blank" className="underline underline-offset-4">
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link href="/privacy" target="_blank" className="underline underline-offset-4">
+                    Privacy Policy
+                  </Link>
+                  .
+                </span>
+              </label>
+            )}
             {error && (
               <p role="alert" className="text-sm text-destructive">
                 {error}

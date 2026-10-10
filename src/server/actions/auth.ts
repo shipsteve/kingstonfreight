@@ -18,6 +18,7 @@ const registerSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
   email: z.email("Enter a valid email").transform((e) => e.toLowerCase()),
   password: z.string().min(8, "Password must be at least 8 characters").max(200),
+  acceptTerms: z.boolean().refine((v) => v, "Please accept the Terms of Service and Privacy Policy"),
 });
 
 export async function registerUser(input: z.input<typeof registerSchema>): Promise<ActionResult<{ id: string }>> {
@@ -28,7 +29,9 @@ export async function registerUser(input: z.input<typeof registerSchema>): Promi
 
   if (await db.user.findUnique({ where: { email } })) return fail("Email already registered");
   try {
-    const user = await db.user.create({ data: { name, email, passwordHash: await bcrypt.hash(password, 10) } });
+    const user = await db.user.create({
+      data: { name, email, passwordHash: await bcrypt.hash(password, 10), termsAcceptedAt: new Date() },
+    });
     await claimShipmentsForEmail(user.id, email);
     return ok({ id: user.id });
   } catch {

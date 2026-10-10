@@ -125,10 +125,10 @@ describe("admin orders", () => {
     const res = await createAdminOrder(order());
     if (!res.ok) throw new Error(res.error);
     asUser(null);
-    const reg = await registerUser({ name: "Walk In", email: "WALKIN@example.com", password: "password123" });
+    const reg = await registerUser({ name: "Walk In", email: "WALKIN@example.com", password: "password123", acceptTerms: true });
     if (!reg.ok) throw new Error(reg.error);
     expect((await db.shipment.findUniqueOrThrow({ where: { id: res.data.shipmentId } })).userId).toBe(reg.data.id);
-    const other = await registerUser({ name: "Other", email: "other@example.com", password: "password123" });
+    const other = await registerUser({ name: "Other", email: "other@example.com", password: "password123", acceptTerms: true });
     if (!other.ok) throw new Error(other.error);
     expect(await db.shipment.count({ where: { userId: other.data.id } })).toBe(0);
   });
