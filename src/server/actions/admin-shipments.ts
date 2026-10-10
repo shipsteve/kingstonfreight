@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { canTransition } from "@/lib/tracking/status";
+import { refundShipment } from "../ledger";
 import { db } from "../db";
 import { sendEmail } from "../email";
 import { statusChangedEmail } from "../email-templates";
@@ -55,6 +56,7 @@ export async function updateShipmentStatus(input: z.input<typeof statusSchema>):
         data: { status },
       });
       if (count !== 1) return { error: "Shipment changed meanwhile; reload and try again" } as const;
+      if (status === "CANCELLED") await refundShipment(tx, shipmentId);
       const event = await tx.trackingEvent.create({
         data: { shipmentId, status, location, countryCode: countryCode ?? null, note: note || null },
       });
@@ -76,11 +78,10 @@ export async function setPaymentStatus(input: z.input<typeof paymentSchema>): Pr
     await requireAdmin();
     const parsed = paymentSchema.safeParse(input);
     if (!parsed.success) return fail(parsed.error.issues[0].message);
-    const { count } = await db.shipment.updateMany({
-      where: { id: parsed.data.shipmentId },
-      data: { paymentStatus: parsed.data.paymentStatus },
-    });
-    if (count !== 1) return fail("Not found");
+    const shipment = await db.shipment.findUnique({ where: { id: parsed.data.shipmentId } });
+    if (!shipment) return fail("Not found");
+    if (shipment.paymentMethod === "BALANCE") return fail("Payment for balance bookings is managed by the ledger");
+    await db.shipment.update({ where: { id: shipment.id }, data: { paymentStatus: parsed.data.paymentStatus } });
     safeRevalidate(revalidatePath, `/admin/shipments/${parsed.data.shipmentId}`);
     return ok({ id: parsed.data.shipmentId });
   });

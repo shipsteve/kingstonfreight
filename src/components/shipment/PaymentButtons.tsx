@@ -6,7 +6,7 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { acceptQuote } from "@/server/actions/booking";
 
-export function AcceptQuoteButton({ quoteId, byCard }: { quoteId: string; byCard: boolean }) {
+export function AcceptQuoteButton({ quoteId }: { quoteId: string }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -26,7 +26,7 @@ export function AcceptQuoteButton({ quoteId, byCard }: { quoteId: string; byCard
         }
       >
         {pending && <Loader2 className="animate-spin" />}
-        {byCard ? "Accept & pay" : "Accept quote"}
+        Accept & pay from balance
       </Button>
       {error && (
         <p role="alert" className="text-sm text-destructive">

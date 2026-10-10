@@ -9,6 +9,7 @@ import { countryName } from "@/lib/geo/countries";
 import { formatMoney } from "@/lib/money";
 import type { Address, PackageInput } from "@/lib/pricing/types";
 import { getMyQuote } from "@/server/actions/quotes";
+import { getMyAccount } from "@/server/queries/customer";
 
 export const metadata = { title: "Quote" };
 
@@ -31,11 +32,21 @@ function AddressBlock({ title, a }: { title: string; a: Address }) {
 
 export default async function QuotePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const quote = await getMyQuote(id);
-  if (!quote) notFound();
+  const [quote, account] = await Promise.all([getMyQuote(id), getMyAccount()]);
+  if (!quote || !account) notFound();
 
-  const expired = quote.status === "EXPIRED" || (quote.status === "PRICED" && quote.expiresAt && quote.expiresAt <= new Date());
+  const expired =
+    quote.status === "EXPIRED" || (quote.status === "PRICED" && quote.expiresAt && quote.expiresAt <= new Date());
   const packages = (quote.packages as PackageInput[]) ?? [];
+  const canAccept = quote.status === "PRICED" && !expired;
+  const blocker =
+    account.accountStatus === "SUSPENDED"
+      ? "Your account is suspended. Please contact support."
+      : account.accountStatus !== "APPROVED"
+        ? "Your account is awaiting approval. Add funds to get started."
+        : quote.priceCents != null && account.balanceCents < quote.priceCents
+          ? `You need ${formatMoney(quote.priceCents - account.balanceCents)} more in your balance to book this.`
+          : null;
 
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-4 py-12">
@@ -77,8 +88,11 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
               <p className="text-sm text-muted-foreground">Valid until {dateFmt.format(quote.expiresAt)}</p>
             )}
           </div>
-          {quote.status === "PRICED" && !expired && (
-            <AcceptQuoteButton quoteId={quote.id} byCard={quote.serviceType !== "FREIGHT"} />
+          {canAccept && !blocker && <AcceptQuoteButton quoteId={quote.id} />}
+          {canAccept && blocker && account.accountStatus !== "SUSPENDED" && (
+            <Link href="/account/wallet" className={buttonVariants({ size: "lg" })}>
+              Add funds
+            </Link>
           )}
           {quote.status === "ACCEPTED" && quote.shipment && (
             <Link href={`/shipments/${quote.shipment.id}`} className={buttonVariants({ variant: "outline" })}>
@@ -92,6 +106,14 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
           )}
         </CardContent>
       </Card>
+      {canAccept && (
+        <p
+          className={blocker ? "text-sm text-destructive" : "text-sm text-muted-foreground"}
+          role={blocker ? "alert" : undefined}
+        >
+          {blocker ?? `Paid from your balance (${formatMoney(account.balanceCents)} available).`}
+        </p>
+      )}
       {quote.status === "PENDING_REVIEW" && (
         <p className="text-sm text-muted-foreground">We&apos;ll email you as soon as this quote is priced.</p>
       )}

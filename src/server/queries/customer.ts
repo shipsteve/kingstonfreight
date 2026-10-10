@@ -1,3 +1,5 @@
+import type { AccountStatus } from "@prisma/client";
+import { balanceCents } from "../ledger";
 import { db } from "../db";
 import { getCurrentUser } from "../session";
 
@@ -24,4 +26,12 @@ export async function getMyShipment(id: string) {
     where: { id, userId: user.id },
     include: { events: { orderBy: { createdAt: "asc" } } },
   });
+}
+
+export async function getMyAccount(): Promise<{ accountStatus: AccountStatus; balanceCents: number } | null> {
+  const user = await getCurrentUser();
+  if (!user) return null;
+  const row = await db.user.findUnique({ where: { id: user.id }, select: { accountStatus: true } });
+  if (!row) return null;
+  return { accountStatus: row.accountStatus, balanceCents: await balanceCents(db, user.id) };
 }

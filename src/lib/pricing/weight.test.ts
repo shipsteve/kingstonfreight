@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { billableWeightKg } from "./weight";
+import { billableWeightKg, shipmentWeights } from "./weight";
 
 const box = (weightKg: number, l: number, w: number, h: number, qty = 1) => ({
   weightKg,
@@ -24,5 +24,15 @@ describe("billableWeightKg", () => {
 
   it("sums multiple packages", () => {
     expect(billableWeightKg([box(2, 10, 10, 10), box(1, 50, 40, 30)])).toBe(14);
+  });
+});
+
+describe("shipmentWeights", () => {
+  it("reports actual (sum of weight × qty) and chargeable (billable) weight", () => {
+    expect(shipmentWeights([box(1.2, 10, 10, 10, 3), box(1, 50, 40, 30, 1)])).toEqual({ actualKg: 4.6, chargeableKg: 16.5 });
+  });
+
+  it("is zero for no packages", () => {
+    expect(shipmentWeights([])).toEqual({ actualKg: 0, chargeableKg: 0 });
   });
 });

@@ -9,3 +9,9 @@ export function billableWeightKg(packages: PackageInput[], divisor: number = con
     return total + roundUpToHalfKg(Math.max(p.weightKg, volumetric)) * p.qty;
   }, 0);
 }
+
+/** Receipt/AWB weights: actual = Σ weight × qty (0.1 kg), chargeable = billable (volumetric-aware). */
+export function shipmentWeights(packages: PackageInput[]): { actualKg: number; chargeableKg: number } {
+  const actual = packages.reduce((sum, p) => sum + p.weightKg * p.qty, 0);
+  return { actualKg: Math.round(actual * 10) / 10, chargeableKg: billableWeightKg(packages) };
+}

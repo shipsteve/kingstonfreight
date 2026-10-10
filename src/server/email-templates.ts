@@ -37,11 +37,16 @@ export function quoteReadyEmail(q: { id: string; priceCents: number; adminNote?:
   };
 }
 
-export function bookingConfirmedEmail(s: { id: string; trackingNumber: string; paymentMethod: "CARD" | "INVOICE" }) {
+export function bookingConfirmedEmail(s: {
+  id: string;
+  trackingNumber: string;
+  priceCents: number;
+  paymentMethod: "BALANCE" | "COUNTER";
+}) {
   const payment =
-    s.paymentMethod === "INVOICE"
-      ? "<p>We'll send you an invoice separately.</p>"
-      : "<p>Your payment has been received.</p>";
+    s.paymentMethod === "BALANCE"
+      ? `<p>${formatMoney(s.priceCents)} has been paid from your account balance.</p>`
+      : "<p>Paid at our counter.</p>";
   return {
     subject: `Booking confirmed: ${s.trackingNumber}`,
     html: layout(
