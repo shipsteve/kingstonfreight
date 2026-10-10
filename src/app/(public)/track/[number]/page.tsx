@@ -1,19 +1,18 @@
 import { notFound } from "next/navigation";
-import { ScheduleLine } from "@/components/shipment/ScheduleLine";
-import { StatusBadge } from "@/components/shipment/StatusBadge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusTimeline } from "@/components/shipment/StatusTimeline";
 import { TrackForm } from "@/components/track/TrackForm";
 import { TrackingGlobe } from "@/components/track/TrackingGlobe";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { shortPlace } from "@/lib/address";
-import { STATUS_LABELS } from "@/lib/tracking/labels";
+import { TrackingHeroCard } from "@/components/track/TrackingHeroCard";
+import { TrackingProgressStepper } from "@/components/track/TrackingProgressStepper";
+import { TrackingQuickActions } from "@/components/track/TrackingQuickActions";
+import { TrackingRouteCard } from "@/components/track/TrackingRouteCard";
 import { clientIp } from "@/server/client-ip";
 import { rateLimit } from "@/server/rate-limit";
 import { getPublicTracking } from "@/server/tracking";
+import { ShieldCheck, Info } from "lucide-react";
 
 export const metadata = { title: "Tracking" };
-
-const SERVICE_LABEL = { PARCEL: "Parcel", COURIER: "Local courier", FREIGHT: "Freight" } as const;
 
 export default async function TrackingPage({ params }: { params: Promise<{ number: string }> }) {
   const { number } = await params;
@@ -34,53 +33,76 @@ export default async function TrackingPage({ params }: { params: Promise<{ numbe
   const latest = t.events.at(-1);
 
   return (
-    <main className="mx-auto w-full max-w-5xl flex-1 space-y-8 px-4 py-12">
+    <main className="mx-auto w-full max-w-6xl flex-1 space-y-6 px-4 py-8 sm:py-12">
+      {/* Search Input Bar */}
       <TrackForm defaultValue={t.trackingNumber} />
 
-      <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr]">
+      {/* Hero Estimated Delivery & Status Headline (contains H1 matching status) */}
+      <TrackingHeroCard
+        trackingNumber={t.trackingNumber}
+        status={t.status}
+        serviceType={t.serviceType}
+        transportMode={t.transportMode}
+        departurePort={t.departurePort}
+        arrivalPort={t.arrivalPort}
+        departureDate={t.departureDate}
+        estimatedArrival={t.estimatedArrival}
+        latestLocation={latest?.location}
+      />
+
+      {/* 5-Stage Visual Progress Pipeline */}
+      <TrackingProgressStepper currentStatus={t.status} events={t.events} />
+
+      {/* Quick Actions & Manage Shipment Bar */}
+      <TrackingQuickActions trackingNumber={t.trackingNumber} />
+
+      {/* Main Grid: Left Route & Milestone Log, Right 3D Globe & Specs */}
+      <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr]">
         <div className="space-y-6">
-          <div>
-            <p className="font-mono text-sm text-muted-foreground">{t.trackingNumber}</p>
-            <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">{STATUS_LABELS[t.status]}</h1>
-            {latest && <p className="mt-1 text-muted-foreground">Last seen: {latest.location}</p>}
-            <ScheduleLine
-              className="mt-3"
-              departureDate={t.departureDate}
-              estimatedArrival={t.estimatedArrival}
-              transportMode={t.transportMode}
-              departurePort={t.departurePort}
-              arrivalPort={t.arrivalPort}
-            />
-            <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-              <StatusBadge status={t.status} />
-              <span className="text-muted-foreground">{SERVICE_LABEL[t.serviceType]}</span>
-            </div>
-          </div>
+          {/* Detailed Route Card */}
+          <TrackingRouteCard
+            origin={t.origin}
+            destination={t.destination}
+            serviceType={t.serviceType}
+            transportMode={t.transportMode}
+            departurePort={t.departurePort}
+            arrivalPort={t.arrivalPort}
+          />
+
+          {/* Milestone Checkpoint Timeline */}
           <Card>
-            <CardContent className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 text-sm">
-              <div>
-                <p className="text-xs tracking-wide text-muted-foreground uppercase">From</p>
-                <p className="font-medium">{shortPlace(t.origin)}</p>
-              </div>
-              <span aria-hidden className="text-muted-foreground">
-                →
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <CardTitle className="text-base font-bold">Milestone History & Checkpoints</CardTitle>
+              <span className="font-mono text-xs text-muted-foreground">
+                {t.events.length} update{t.events.length === 1 ? "" : "s"}
               </span>
-              <div className="text-right">
-                <p className="text-xs tracking-wide text-muted-foreground uppercase">To</p>
-                <p className="font-medium">{shortPlace(t.destination)}</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">History</CardTitle>
             </CardHeader>
             <CardContent>
               <StatusTimeline events={t.events} />
             </CardContent>
           </Card>
         </div>
-        <TrackingGlobe tracking={t} />
+
+        {/* Right Column: Interactive 3D Flight & Transit Globe */}
+        <div className="space-y-6">
+          <TrackingGlobe tracking={t} />
+
+          {/* Carrier Verified Guarantee Box */}
+          <div className="rounded-xl border border-border bg-card/60 p-5 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2 font-semibold text-foreground">
+              <ShieldCheck className="size-4 text-emerald-600" />
+              <span>KingstonFreight Secure Custody Protocol</span>
+            </div>
+            <p className="mt-1.5 leading-relaxed">
+              Consignments are scanned at every hub exchange with cryptographic chain-of-custody logging.
+              For urgent questions or delivery amendments, contact our 24/7 port dispatch.
+            </p>
+            <div className="mt-3 flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground border-t border-border/60 pt-2.5">
+              <Info className="size-3.5 text-primary" />
+              <span>Public tracking displays route city pairs for customer confidentiality.</span>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   );
