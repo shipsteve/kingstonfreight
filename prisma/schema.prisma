@@ -211,6 +211,8 @@ model Shipment {
   user               User?           @relation(fields: [userId], references: [id])
   /// Admin orders for someone without an account yet; claimed when that email registers.
   customerEmail      String?
+  /// sha256 of a one-time link emailed to customerEmail; proves inbox ownership before linking to an account.
+  claimTokenHash     String?         @unique
   createdById        String?
   trackingNumber     String          @unique
   serviceType        ServiceType

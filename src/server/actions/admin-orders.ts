@@ -9,6 +9,7 @@ import { priceCourier } from "@/lib/pricing/courier";
 import { priceParcel } from "@/lib/pricing/parcel";
 import { shipmentWeights } from "@/lib/pricing/weight";
 import { addressSchema, packageSchema } from "@/lib/quote-schema";
+import { absoluteUrl } from "@/lib/receipt";
 import { site } from "@/lib/site";
 import { db } from "../db";
 import { sendEmail } from "../email";
@@ -17,11 +18,13 @@ import { debitForShipment, InsufficientBalanceError, lockUser } from "../ledger"
 import { loadPricingContext } from "../rates";
 import { fail, ok, type ActionResult } from "../result";
 import { requireAdmin } from "../session";
-import { attachCoordinates, uniqueTrackingNumber } from "../shipments";
+import { attachCoordinates, newClaimToken, uniqueTrackingNumber } from "../shipments";
 import { guarded } from "./guard";
 import { safeRevalidate } from "./revalidate";
 
 class OrderRefused extends Error {}
+
+const claimUrl = (token: string) => absoluteUrl(`/claim/${token}`);
 
 /** Staff-created order (counter/phone). Paid at the counter, or charged to an approved customer's balance. */
 export async function createAdminOrder(
@@ -33,7 +36,10 @@ export async function createAdminOrder(
     if (!parsed.success) return fail(parsed.error.issues[0].message);
     const o = parsed.data;
     const weights = shipmentWeights(o.packages);
-    const customer = await db.user.findUnique({ where: { email: o.customerEmail } });
+    // Only a balance charge links to an account directly (the admin chose that account). Otherwise the
+    // order is linked when someone who can read the customer's inbox opens the emailed claim link.
+    const customer = o.payment === "BALANCE" ? await db.user.findUnique({ where: { email: o.customerEmail } }) : null;
+    const claim = o.payment === "BALANCE" ? null : newClaimToken();
 
     let shipment;
     try {
@@ -47,6 +53,7 @@ export async function createAdminOrder(
           data: {
             userId: customer?.id ?? null,
             customerEmail: o.customerEmail,
+            claimTokenHash: claim?.hash ?? null,
             createdById: admin.id,
             trackingNumber: await uniqueTrackingNumber(tx),
             serviceType: o.serviceType,
@@ -86,7 +93,10 @@ export async function createAdminOrder(
     }
 
     await attachCoordinates(shipment.id, o.sender, o.recipient);
-    await sendEmail({ to: o.customerEmail, ...orderCreatedEmail(shipment, site.name) });
+    await sendEmail({
+      to: o.customerEmail,
+      ...orderCreatedEmail(shipment, site.name, claim ? claimUrl(claim.token) : null),
+    });
     safeRevalidate(revalidatePath, "/admin/shipments");
     return ok({ shipmentId: shipment.id, trackingNumber: shipment.trackingNumber });
   });

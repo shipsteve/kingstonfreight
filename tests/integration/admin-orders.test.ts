@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { db } from "@/server/db";
 import { createAdminOrder, suggestAdminOrderPrice, updateShipmentSchedule } from "@/server/actions/admin-orders";
+import { claimShipment } from "@/server/actions/claim";
 import { registerUser } from "@/server/actions/auth";
 import { sendEmail } from "@/server/email";
 import { balanceCents } from "@/server/ledger";
@@ -121,16 +122,46 @@ describe("admin orders", () => {
     expect(res.ok).toBe(true);
   });
 
-  it("is claimed exactly once when that email registers, case-insensitively", async () => {
+  it("does not hand a counter order to whoever registers that email first", async () => {
     const res = await createAdminOrder(order());
     if (!res.ok) throw new Error(res.error);
     asUser(null);
-    const reg = await registerUser({ name: "Walk In", email: "WALKIN@example.com", password: "password123", acceptTerms: true });
+    const reg = await registerUser({ name: "Impostor", email: "WALKIN@example.com", password: "password123", acceptTerms: true });
     if (!reg.ok) throw new Error(reg.error);
-    expect((await db.shipment.findUniqueOrThrow({ where: { id: res.data.shipmentId } })).userId).toBe(reg.data.id);
-    const other = await registerUser({ name: "Other", email: "other@example.com", password: "password123", acceptTerms: true });
-    if (!other.ok) throw new Error(other.error);
-    expect(await db.shipment.count({ where: { userId: other.data.id } })).toBe(0);
+    expect((await db.shipment.findUniqueOrThrow({ where: { id: res.data.shipmentId } })).userId).toBeNull();
+  });
+
+  it("does not auto-link a counter order to an existing account with that email", async () => {
+    await makeUser("walkin@example.com");
+    const res = await createAdminOrder(order());
+    if (!res.ok) throw new Error(res.error);
+    expect((await db.shipment.findUniqueOrThrow({ where: { id: res.data.shipmentId } })).userId).toBeNull();
+  });
+
+  it("emails a one-time claim link that adds the order to the account of whoever holds the inbox", async () => {
+    const res = await createAdminOrder(order());
+    if (!res.ok) throw new Error(res.error);
+    const html = vi.mocked(sendEmail).mock.calls.at(-1)![0].html;
+    const token = html.match(/\/claim\/([A-Za-z0-9_-]{20,})/)?.[1];
+    expect(token).toBeTruthy();
+    expect((await db.shipment.findUniqueOrThrow({ where: { id: res.data.shipmentId } })).claimTokenHash).not.toContain(token);
+
+    const owner = await makeUser("walkin@example.com");
+    asUser(owner);
+    expect(await claimShipment(token!)).toEqual({ ok: true, data: { shipmentId: res.data.shipmentId } });
+    expect((await db.shipment.findUniqueOrThrow({ where: { id: res.data.shipmentId } })).userId).toBe(owner.id);
+
+    asUser(await makeUser("someone@example.com"));
+    expect(await claimShipment(token!)).toEqual({ ok: false, error: "This link is invalid or has already been used" });
+    expect(await claimShipment("not-a-real-token-xxxxxxxxxxxx")).toEqual({
+      ok: false,
+      error: "This link is invalid or has already been used",
+    });
+  });
+
+  it("requires login to claim", async () => {
+    asUser(null);
+    expect(await claimShipment("whatever-token-xxxxxxxxxxxxxx")).toEqual({ ok: false, error: "Please log in" });
   });
 
   it("sets and clears schedule dates", async () => {

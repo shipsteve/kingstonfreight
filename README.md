@@ -32,7 +32,7 @@ Log in at `/login` with `ADMIN_EMAIL` / `ADMIN_PASSWORD` to reach `/admin`. To u
 
 Every credit and debit is a row in an append-only ledger. The balance is always the sum of the rows, so there is a full audit trail. Admins can **approve**, **suspend** or **adjust** (with a note) any customer in **Admin → Customers**.
 
-**Counter orders:** **Admin → Shipments → New order** records pieces, weights, contents, declared value, airport codes and departure/arrival dates. The order is either *Paid at counter* or charged to an approved customer's balance. **Print receipt** gives a branded receipt whose QR code opens the public tracking page. Orders for an email without an account appear in that customer's dashboard once they register with it.
+**Counter orders:** **Admin → Shipments → New order** records pieces, weights, contents, declared value, airport codes and departure/arrival dates. The order is either *Paid at counter* or charged to an approved customer's balance. **Print receipt** gives a branded receipt whose QR code opens the public tracking page. Counter orders email the customer a tracking link plus a **one-time claim link**; opening it while signed in adds the order to that account. Accounts aren't email-verified, so orders are never linked just because an email matches. Orders charged to a balance are linked to that account directly.
 
 ## Environment variables
 

@@ -38,6 +38,8 @@ describe("receipt data", () => {
     });
     if (!res.ok) throw new Error(res.error);
     shipmentId = res.data.shipmentId;
+    // Counter orders are linked via the emailed claim link; link directly here to test receipt access.
+    await db.shipment.update({ where: { id: shipmentId }, data: { userId: owner.id } });
   });
 
   it("gives admins the full receipt", async () => {

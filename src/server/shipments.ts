@@ -1,3 +1,4 @@
+import { createHash, randomBytes } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import { generateTrackingNumber } from "@/lib/tracking/number";
 import { db } from "./db";
@@ -33,11 +34,12 @@ export async function attachCoordinates(
   }
 }
 
-/** Links admin-created orders placed under this email to the account that now owns the email. */
-export async function claimShipmentsForEmail(userId: string, email: string): Promise<number> {
-  const { count } = await db.shipment.updateMany({
-    where: { userId: null, customerEmail: email.trim().toLowerCase() },
-    data: { userId },
-  });
-  return count;
+/** One-time claim token for an order placed under an email: the raw token goes in the email, only its hash is stored. */
+export function newClaimToken(): { token: string; hash: string } {
+  const token = randomBytes(24).toString("base64url");
+  return { token, hash: hashClaimToken(token) };
+}
+
+export function hashClaimToken(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
 }

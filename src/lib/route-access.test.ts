@@ -18,6 +18,10 @@ describe("routeAccess", () => {
     expect(routeAccess("/account/wallet", "CUSTOMER")).toEqual({ allow: true });
   });
 
+  it("requires login to claim an order", () => {
+    expect(routeAccess("/claim/abc", null)).toEqual({ allow: false, redirect: "/login?next=%2Fclaim%2Fabc" });
+  });
+
   it("keeps customers out of admin", () => {
     expect(routeAccess("/admin", "CUSTOMER")).toEqual({ allow: false, redirect: "/" });
     expect(routeAccess("/dashboard", "CUSTOMER")).toEqual({ allow: true });

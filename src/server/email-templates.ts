@@ -117,12 +117,15 @@ export function accountApprovedEmail() {
   };
 }
 
-export function orderCreatedEmail(s: { trackingNumber: string }, siteName: string) {
+export function orderCreatedEmail(s: { trackingNumber: string }, siteName: string, claimUrl: string | null) {
+  const claim = claimUrl
+    ? `<p>Want this shipment in your ${esc(siteName)} account? <a href="${esc(claimUrl)}">Add it to your account</a> (log in or create an account first). This link works once.</p>`
+    : "";
   return {
     subject: `Your ${siteName} shipment ${s.trackingNumber}`,
     html: layout(
       "Your shipment is booked",
-      `<p>Tracking number: <strong>${esc(s.trackingNumber)}</strong></p><p>Track it any time with the link below. Create an account with this email address to see all your shipments in one place.</p>`,
+      `<p>Tracking number: <strong>${esc(s.trackingNumber)}</strong></p><p>Track it any time with the link below.</p>${claim}`,
       { href: `${appUrl()}/track/${s.trackingNumber}`, label: "Track shipment" },
     ),
   };

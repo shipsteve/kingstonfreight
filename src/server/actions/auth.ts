@@ -8,7 +8,6 @@ import { signIn, signOut } from "../auth";
 import { clientIp } from "../client-ip";
 import { rateLimit } from "../rate-limit";
 import { db } from "../db";
-import { claimShipmentsForEmail } from "../shipments";
 import { fail, ok, type ActionResult } from "../result";
 
 const TOO_MANY = "Too many attempts. Please try again in a few minutes.";
@@ -32,7 +31,6 @@ export async function registerUser(input: z.input<typeof registerSchema>): Promi
     const user = await db.user.create({
       data: { name, email, passwordHash: await bcrypt.hash(password, 10), termsAcceptedAt: new Date() },
     });
-    await claimShipmentsForEmail(user.id, email);
     return ok({ id: user.id });
   } catch {
     return fail("Email already registered");
