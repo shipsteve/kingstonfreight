@@ -19,7 +19,7 @@ import { asUser } from "./session-mock";
 vi.mock("@/server/session", () => import("./session-mock"));
 vi.mock("@/server/email", () => ({ sendEmail: vi.fn(async () => {}) }));
 
-type Status = "AWAITING_PAYMENT" | "BOOKED" | "IN_TRANSIT" | "DELIVERED" | "EXCEPTION";
+type Status = "BOOKED" | "IN_TRANSIT" | "DELIVERED" | "EXCEPTION";
 
 async function makeQuote(userId: string, serviceType: "PARCEL" | "FREIGHT", status: "PENDING_REVIEW" | "PRICED") {
   return db.quote.create({
@@ -47,7 +47,7 @@ async function makeShipment(userId: string, status: Status) {
       serviceType: "PARCEL",
       status,
       priceCents: 1000,
-      paymentMethod: "CARD",
+      paymentMethod: "COUNTER",
       origin: nycAddress,
       destination: parisAddress,
     },
@@ -198,12 +198,11 @@ describe("admin actions", () => {
   it("counts the admin dashboard numbers", async () => {
     await makeQuote(customer.id, "FREIGHT", "PENDING_REVIEW");
     await makeQuote(customer.id, "FREIGHT", "PENDING_REVIEW");
-    await makeShipment(customer.id, "AWAITING_PAYMENT");
     await makeShipment(customer.id, "IN_TRANSIT");
     await makeShipment(customer.id, "IN_TRANSIT");
     await makeShipment(customer.id, "IN_TRANSIT");
     await makeShipment(customer.id, "EXCEPTION");
     await makeShipment(customer.id, "DELIVERED");
-    expect(await getAdminCounts()).toEqual({ pendingQuotes: 2, awaitingPayment: 1, inTransit: 3, exceptions: 1 });
+    expect(await getAdminCounts()).toEqual({ pendingQuotes: 2, inTransit: 3, exceptions: 1 });
   });
 });

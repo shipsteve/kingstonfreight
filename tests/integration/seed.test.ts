@@ -20,7 +20,7 @@ describe("seed", () => {
 
   it("creates admin, zones, full rate matrix and courier rate", async () => {
     await seed(db);
-    expect(await db.user.count({ where: { role: "ADMIN" } })).toBe(1);
+    expect(await db.user.count({ where: { role: "ADMIN", accountStatus: "APPROVED" } })).toBe(1);
     expect(await db.zone.count()).toBe(5);
     expect(await db.parcelRate.count()).toBe(175);
     expect(await db.courierRate.count()).toBe(1);

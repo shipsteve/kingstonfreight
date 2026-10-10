@@ -32,7 +32,6 @@ enum QuoteStatus {
 }
 
 enum ShipmentStatus {
-  AWAITING_PAYMENT
   BOOKED
   PICKED_UP
   IN_TRANSIT
@@ -44,26 +43,114 @@ enum ShipmentStatus {
 }
 
 enum PaymentMethod {
-  CARD
-  INVOICE
+  BALANCE
+  COUNTER
 }
 
 enum PaymentStatus {
   UNPAID
   PAID
+  REFUNDED
+}
+
+enum AccountStatus {
+  PENDING
+  APPROVED
+  SUSPENDED
+}
+
+enum LedgerKind {
+  TOPUP
+  BOOKING
+  REFUND
+  ADJUSTMENT
+}
+
+enum Coin {
+  BTC
+  LTC
+}
+
+enum TopUpMethod {
+  MANUAL
+}
+
+enum TopUpStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum TransportMode {
+  AIR
+  SEA
+  ROAD
+}
+
+enum BillTo {
+  SENDER
+  RECIPIENT
+  THIRD_PARTY
 }
 
 model User {
-  id           String     @id @default(cuid())
-  email        String     @unique
-  name         String
-  passwordHash String
-  role         Role       @default(CUSTOMER)
-  company      String?
-  phone        String?
-  createdAt    DateTime   @default(now())
-  quotes       Quote[]
-  shipments    Shipment[]
+  id              String        @id @default(cuid())
+  email           String        @unique
+  name            String
+  passwordHash    String
+  role            Role          @default(CUSTOMER)
+  company         String?
+  phone           String?
+  accountStatus   AccountStatus @default(PENDING)
+  approvedAt      DateTime?
+  approvedById    String?
+  termsAcceptedAt DateTime?
+  createdAt       DateTime      @default(now())
+  quotes          Quote[]
+  shipments       Shipment[]
+  ledgerEntries   LedgerEntry[]
+  topUps          TopUp[]
+}
+
+/// Append-only. Balance = SUM(amountCents) per user.
+model LedgerEntry {
+  id          String     @id @default(cuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id])
+  amountCents Int
+  kind        LedgerKind
+  topUpId     String?    @unique
+  topUp       TopUp?     @relation(fields: [topUpId], references: [id])
+  shipmentId  String?
+  shipment    Shipment?  @relation(fields: [shipmentId], references: [id])
+  note        String?
+  createdById String?
+  createdAt   DateTime   @default(now())
+
+  @@unique([shipmentId, kind])
+  @@index([userId])
+}
+
+model TopUp {
+  id             String       @id @default(cuid())
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  method         TopUpMethod  @default(MANUAL)
+  coin           Coin
+  txHash         String
+  requestedCents Int
+  creditedCents  Int?
+  status         TopUpStatus  @default(PENDING_REVIEW)
+  chainCheck     Json?
+  adminNote      String?
+  reviewedById   String?
+  reviewedAt     DateTime?
+  createdAt      DateTime     @default(now())
+  ledgerEntry    LedgerEntry?
+
+  @@unique([coin, txHash])
+  @@index([status])
+  @@index([userId])
 }
 
 model Zone {
@@ -117,30 +204,47 @@ model Quote {
 }
 
 model Shipment {
-  id              String          @id @default(cuid())
-  quoteId         String          @unique
-  quote           Quote           @relation(fields: [quoteId], references: [id])
-  userId          String
-  user            User            @relation(fields: [userId], references: [id])
-  trackingNumber  String          @unique
-  serviceType     ServiceType
-  status          ShipmentStatus
-  priceCents      Int
-  paymentMethod   PaymentMethod
-  paymentStatus   PaymentStatus   @default(UNPAID)
-  stripeSessionId String?
-  origin          Json
-  destination     Json
+  id                 String          @id @default(cuid())
+  quoteId            String?         @unique
+  quote              Quote?          @relation(fields: [quoteId], references: [id])
+  userId             String?
+  user               User?           @relation(fields: [userId], references: [id])
+  /// Admin orders for someone without an account yet; claimed when that email registers.
+  customerEmail      String?
+  createdById        String?
+  trackingNumber     String          @unique
+  serviceType        ServiceType
+  status             ShipmentStatus
+  priceCents         Int
+  paymentMethod      PaymentMethod
+  paymentStatus      PaymentStatus   @default(UNPAID)
+  origin             Json
+  destination        Json
+  transportMode      TransportMode?
+  departurePort      String?
+  arrivalPort        String?
+  departureDate      DateTime?
+  estimatedArrival   DateTime?
+  packages           Json?
+  actualWeightKg     Float?
+  chargeableWeightKg Float?
+  contents           String?
+  declaredValueCents Int?
+  goodsOriginCountry String?
+  hsCode             String?
+  billTo             BillTo?
   // Geocoded city positions for the tracking globe; null → fall back to country centroid.
-  originLat       Float?
-  originLng       Float?
-  destLat         Float?
-  destLng         Float?
-  createdAt       DateTime        @default(now())
-  events          TrackingEvent[]
+  originLat          Float?
+  originLng          Float?
+  destLat            Float?
+  destLng            Float?
+  createdAt          DateTime        @default(now())
+  events             TrackingEvent[]
+  ledgerEntries      LedgerEntry[]
 
   @@index([userId])
   @@index([status])
+  @@index([customerEmail])
 }
 
 model TrackingEvent {

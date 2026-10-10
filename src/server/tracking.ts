@@ -35,7 +35,7 @@ export async function getPublicTracking(raw: string): Promise<PublicTracking | n
       },
     },
   });
-  if (!s || s.status === "AWAITING_PAYMENT") return null;
+  if (!s) return null;
 
   const place = (json: unknown, lat: number | null, lng: number | null) => {
     const a = asAddress(json);

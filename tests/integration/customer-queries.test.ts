@@ -31,7 +31,7 @@ async function shipmentFor(userId: string, n: number, createdAt: Date) {
       serviceType: "PARCEL",
       status: "BOOKED",
       priceCents: 1000,
-      paymentMethod: "CARD",
+      paymentMethod: "BALANCE",
       origin: nycAddress,
       destination: parisAddress,
       createdAt,

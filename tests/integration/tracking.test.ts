@@ -3,7 +3,7 @@ import { db } from "@/server/db";
 import { getPublicTracking } from "@/server/tracking";
 import { makeUser, nycAddress, parisAddress, resetDb, smallBox } from "./helpers";
 
-async function shipment(status: "AWAITING_PAYMENT" | "IN_TRANSIT", trackingNumber = "SHP-ABCD234567") {
+async function shipment(status: "BOOKED" | "IN_TRANSIT", trackingNumber = "SHP-ABCD234567") {
   const user = await makeUser(`${trackingNumber.toLowerCase()}@example.com`);
   const quote = await db.quote.create({
     data: {
@@ -24,7 +24,7 @@ async function shipment(status: "AWAITING_PAYMENT" | "IN_TRANSIT", trackingNumbe
       serviceType: "PARCEL",
       status,
       priceCents: 4300,
-      paymentMethod: "CARD",
+      paymentMethod: "BALANCE",
       origin: { ...nycAddress, phone: "+1 555 0100" },
       destination: parisAddress,
       events: {
@@ -86,8 +86,4 @@ describe("getPublicTracking", () => {
     expect(await getPublicTracking("SHP-ZZZZZZZZZZ")).toBeNull();
   });
 
-  it("hides shipments that are still awaiting payment", async () => {
-    await shipment("AWAITING_PAYMENT");
-    expect(await getPublicTracking("SHP-ABCD234567")).toBeNull();
-  });
 });

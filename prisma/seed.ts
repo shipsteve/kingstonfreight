@@ -28,7 +28,14 @@ export async function seed(db: PrismaClient) {
   await db.user.upsert({
     where: { email },
     update: {},
-    create: { email, name: "Admin", role: "ADMIN", passwordHash: await bcrypt.hash(password, 10) },
+    create: {
+      email,
+      name: "Admin",
+      role: "ADMIN",
+      accountStatus: "APPROVED",
+      approvedAt: new Date(),
+      passwordHash: await bcrypt.hash(password, 10),
+    },
   });
 
   const zones = [];

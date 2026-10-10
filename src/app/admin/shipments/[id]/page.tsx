@@ -40,7 +40,7 @@ export default async function AdminShipmentPage({ params }: { params: Promise<{ 
         <div>
           <h1 className="font-mono text-2xl font-semibold">{s.trackingNumber}</h1>
           <p className="text-sm text-muted-foreground">
-            {s.user.name} · {s.user.email} · {s.serviceType}
+            {s.user ? `${s.user.name} · ${s.user.email}` : (s.customerEmail ?? "No customer linked")} · {s.serviceType}
           </p>
         </div>
         <StatusBadge status={s.status} className="text-sm" />
@@ -62,7 +62,7 @@ export default async function AdminShipmentPage({ params }: { params: Promise<{ 
           </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-2xl font-semibold tabular-nums">{formatMoney(s.priceCents)}</p>
-            <p className="text-sm text-muted-foreground">{s.paymentMethod === "INVOICE" ? "Invoice" : "Card (Stripe)"}</p>
+            <p className="text-sm text-muted-foreground">{s.paymentMethod === "BALANCE" ? "Account balance" : "Paid at counter"}</p>
             <PaymentToggle shipmentId={s.id} paymentStatus={s.paymentStatus} />
           </CardContent>
         </Card>

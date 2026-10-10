@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CopyButton } from "@/components/shipment/CopyButton";
-import { PayNowButton } from "@/components/shipment/PaymentButtons";
 import { StatusBadge } from "@/components/shipment/StatusBadge";
 import { StatusTimeline } from "@/components/shipment/StatusTimeline";
 import { Badge } from "@/components/ui/badge";
@@ -12,26 +11,13 @@ import { getMyShipment } from "@/server/queries/customer";
 
 export const metadata = { title: "Shipment" };
 
-export default async function ShipmentPage({
-  params,
-  searchParams,
-}: {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ paid?: string }>;
-}) {
-  const [{ id }, { paid }] = await Promise.all([params, searchParams]);
+export default async function ShipmentPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const shipment = await getMyShipment(id);
   if (!shipment) notFound();
 
-  const awaitingPayment = shipment.status === "AWAITING_PAYMENT";
-
   return (
     <main className="mx-auto w-full max-w-3xl flex-1 space-y-6 px-4 py-12">
-      {paid && awaitingPayment && (
-        <p role="status" className="rounded-lg border border-sky-500/30 bg-sky-500/10 p-3 text-sm">
-          Payment received by Stripe. Confirming your booking… refresh in a moment.
-        </p>
-      )}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-sm text-muted-foreground">Tracking number</p>
@@ -51,13 +37,16 @@ export default async function ShipmentPage({
             </p>
             <p className="text-sm text-muted-foreground">
               {formatMoney(shipment.priceCents)} ·{" "}
-              {shipment.paymentMethod === "INVOICE" ? "Invoice" : "Card"}{" "}
+              {shipment.paymentMethod === "BALANCE" ? "Account balance" : "Paid at counter"}{" "}
               <Badge variant="outline" className="ml-1">
-                {shipment.paymentStatus === "PAID" ? "Paid" : "Unpaid"}
+                {shipment.paymentStatus === "PAID"
+                  ? "Paid"
+                  : shipment.paymentStatus === "REFUNDED"
+                    ? "Refunded"
+                    : "Unpaid"}
               </Badge>
             </p>
           </div>
-          {awaitingPayment && <PayNowButton shipmentId={shipment.id} />}
         </CardContent>
       </Card>
 
@@ -70,14 +59,12 @@ export default async function ShipmentPage({
         </CardContent>
       </Card>
 
-      {!awaitingPayment && (
-        <p className="text-sm text-muted-foreground">
-          Share the public tracking link:{" "}
-          <Link className="underline underline-offset-4" href={`/track/${shipment.trackingNumber}`}>
-            /track/{shipment.trackingNumber}
-          </Link>
-        </p>
-      )}
+      <p className="text-sm text-muted-foreground">
+        Share the public tracking link:{" "}
+        <Link className="underline underline-offset-4" href={`/track/${shipment.trackingNumber}`}>
+          /track/{shipment.trackingNumber}
+        </Link>
+      </p>
     </main>
   );
 }

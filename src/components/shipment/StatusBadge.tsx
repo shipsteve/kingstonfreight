@@ -4,7 +4,6 @@ import { STATUS_LABELS } from "@/lib/tracking/labels";
 import { cn } from "@/lib/utils";
 
 const TONE: Record<ShipmentStatus, string> = {
-  AWAITING_PAYMENT: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
   BOOKED: "bg-sky-500/15 text-sky-700 dark:text-sky-300",
   PICKED_UP: "bg-sky-500/15 text-sky-700 dark:text-sky-300",
   IN_TRANSIT: "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300",

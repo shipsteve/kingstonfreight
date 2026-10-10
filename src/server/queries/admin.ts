@@ -6,13 +6,12 @@ const MOVING: ShipmentStatus[] = ["PICKED_UP", "IN_TRANSIT", "CUSTOMS", "OUT_FOR
 
 export async function getAdminCounts() {
   await requireAdmin();
-  const [pendingQuotes, awaitingPayment, inTransit, exceptions] = await Promise.all([
+  const [pendingQuotes, inTransit, exceptions] = await Promise.all([
     db.quote.count({ where: { status: "PENDING_REVIEW" } }),
-    db.shipment.count({ where: { status: "AWAITING_PAYMENT" } }),
     db.shipment.count({ where: { status: { in: MOVING } } }),
     db.shipment.count({ where: { status: "EXCEPTION" } }),
   ]);
-  return { pendingQuotes, awaitingPayment, inTransit, exceptions };
+  return { pendingQuotes, inTransit, exceptions };
 }
 
 export async function listPendingFreightQuotes() {

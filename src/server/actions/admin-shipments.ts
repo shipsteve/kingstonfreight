@@ -12,7 +12,6 @@ import { guarded } from "./guard";
 import { safeRevalidate } from "./revalidate";
 
 const STATUSES = [
-  "AWAITING_PAYMENT",
   "BOOKED",
   "PICKED_UP",
   "IN_TRANSIT",
@@ -63,7 +62,8 @@ export async function updateShipmentStatus(input: z.input<typeof statusSchema>):
     });
     if ("error" in result) return fail(result.error!);
 
-    await sendEmail({ to: result.shipment.user.email, ...statusChangedEmail(result.shipment, result.event) });
+    const to = result.shipment.user?.email ?? result.shipment.customerEmail;
+    if (to) await sendEmail({ to, ...statusChangedEmail(result.shipment, result.event) });
     safeRevalidate(revalidatePath, `/admin/shipments/${shipmentId}`);
     return ok({ id: shipmentId });
   });

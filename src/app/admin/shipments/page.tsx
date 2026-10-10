@@ -72,7 +72,7 @@ export default async function AdminShipmentsPage({
                     {s.trackingNumber}
                   </Link>
                 </TableCell>
-                <TableCell>{s.user.email}</TableCell>
+                <TableCell>{s.user?.email ?? s.customerEmail ?? "—"}</TableCell>
                 <TableCell className="hidden lg:table-cell">
                   {shortPlace(asAddress(s.origin))} → {shortPlace(asAddress(s.destination))}
                 </TableCell>
