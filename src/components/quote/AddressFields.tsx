@@ -11,12 +11,15 @@ export function AddressFields({
   value,
   onChange,
   lockCountry,
+  withContact,
 }: {
   id: string;
   legend: string;
   value: Address;
   onChange: (next: Address) => void;
   lockCountry?: boolean;
+  /** Also collect phone and email (admin orders / receipts). */
+  withContact?: boolean;
 }) {
   const set = (key: keyof Address) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     onChange({ ...value, [key]: e.target.value });
@@ -47,6 +50,30 @@ export function AddressFields({
             required
           />
         </Field>
+        {withContact && (
+          <>
+            <Field>
+              <FieldLabel htmlFor={`${id}-phone`}>Phone</FieldLabel>
+              <Input
+                id={`${id}-phone`}
+                type="tel"
+                value={value.phone ?? ""}
+                onChange={set("phone")}
+                autoComplete="tel"
+              />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor={`${id}-email`}>Email</FieldLabel>
+              <Input
+                id={`${id}-email`}
+                type="email"
+                value={value.email ?? ""}
+                onChange={set("email")}
+                autoComplete="email"
+              />
+            </Field>
+          </>
+        )}
         <Field className="sm:col-span-2">
           <FieldLabel htmlFor={`${id}-country`}>Country</FieldLabel>
           <select

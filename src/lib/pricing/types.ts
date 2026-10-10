@@ -6,6 +6,7 @@ export type Address = {
   postcode: string;
   countryCode: string;
   phone?: string;
+  email?: string;
 };
 
 export type PackageInput = { weightKg: number; lengthCm: number; widthCm: number; heightCm: number; qty: number };

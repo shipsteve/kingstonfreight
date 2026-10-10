@@ -1,7 +1,7 @@
 import type { ShipmentStatus } from "@prisma/client";
 import Link from "next/link";
 import { StatusBadge } from "@/components/shipment/StatusBadge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { asAddress, shortPlace } from "@/lib/address";
@@ -24,7 +24,12 @@ export default async function AdminShipmentsPage({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold tracking-tight">Shipments</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold tracking-tight">Shipments</h1>
+        <Link href="/admin/shipments/new" className={buttonVariants()}>
+          New order
+        </Link>
+      </div>
       <form className="flex flex-wrap gap-2" action="/admin/shipments">
         <Input name="q" placeholder="Tracking number or email" defaultValue={sp.q} className="max-w-xs" />
         <select

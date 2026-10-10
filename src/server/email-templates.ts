@@ -116,3 +116,14 @@ export function accountApprovedEmail() {
     ),
   };
 }
+
+export function orderCreatedEmail(s: { trackingNumber: string }, siteName: string) {
+  return {
+    subject: `Your ${siteName} shipment ${s.trackingNumber}`,
+    html: layout(
+      "Your shipment is booked",
+      `<p>Tracking number: <strong>${esc(s.trackingNumber)}</strong></p><p>Track it any time with the link below. Create an account with this email address to see all your shipments in one place.</p>`,
+      { href: `${appUrl()}/track/${s.trackingNumber}`, label: "Track shipment" },
+    ),
+  };
+}

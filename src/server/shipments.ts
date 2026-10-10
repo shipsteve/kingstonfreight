@@ -32,3 +32,12 @@ export async function attachCoordinates(
     console.warn("[geocode] could not store coordinates", e);
   }
 }
+
+/** Links admin-created orders placed under this email to the account that now owns the email. */
+export async function claimShipmentsForEmail(userId: string, email: string): Promise<number> {
+  const { count } = await db.shipment.updateMany({
+    where: { userId: null, customerEmail: email.trim().toLowerCase() },
+    data: { userId },
+  });
+  return count;
+}

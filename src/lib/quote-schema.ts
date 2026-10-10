@@ -14,6 +14,10 @@ export const addressSchema = z.object({
     .regex(/^[A-Za-z]{2}$/, "Use a 2-letter country code")
     .transform((c) => c.toUpperCase()),
   phone: z.string().trim().max(40).optional(),
+  email: z
+    .union([z.literal(""), z.email("Enter a valid email")])
+    .optional()
+    .transform((e) => (e ? e.toLowerCase() : undefined)),
 });
 
 export const packageSchema = z.object({
