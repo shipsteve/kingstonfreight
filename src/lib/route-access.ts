@@ -1,7 +1,7 @@
 export type RouteDecision = { allow: true } | { allow: false; redirect: string };
 
 const under = (path: string, prefix: string) => path === prefix || path.startsWith(prefix + "/");
-const CUSTOMER_PREFIXES = ["/dashboard", "/quotes", "/shipments"];
+const CUSTOMER_PREFIXES = ["/dashboard", "/quotes", "/shipments", "/account"];
 
 export function routeAccess(path: string, role: "CUSTOMER" | "ADMIN" | null): RouteDecision {
   const isAdmin = under(path, "/admin");

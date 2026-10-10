@@ -72,3 +72,47 @@ export function statusChangedEmail(
     ),
   };
 }
+
+export function topUpReceivedEmail(t: { coin: string; amountCents: number }) {
+  return {
+    subject: "Payment received — under review",
+    html: layout(
+      "We've received your payment details",
+      `<p>Thanks! We're verifying your ${esc(t.coin)} payment of <strong>${formatMoney(t.amountCents)}</strong>. We'll email you as soon as it's added to your balance.</p>`,
+      { href: `${appUrl()}/account/wallet`, label: "View wallet" },
+    ),
+  };
+}
+
+export function topUpApprovedEmail(t: { creditedCents: number; balanceCents: number }) {
+  return {
+    subject: `Funds added: ${formatMoney(t.creditedCents)}`,
+    html: layout(
+      "Funds added to your balance",
+      `<p>We've added <strong>${formatMoney(t.creditedCents)}</strong>. Your balance is now ${formatMoney(t.balanceCents)}.</p>`,
+      { href: `${appUrl()}/account/wallet`, label: "View wallet" },
+    ),
+  };
+}
+
+export function topUpRejectedEmail(t: { coin: string; amountCents: number; note: string }) {
+  return {
+    subject: "We couldn't verify your payment",
+    html: layout(
+      "We couldn't verify your payment",
+      `<p>Your ${esc(t.coin)} top-up of ${formatMoney(t.amountCents)} wasn't added.</p><p>Reason: ${esc(t.note)}</p><p>Reply to this email if you think this is a mistake.</p>`,
+      { href: `${appUrl()}/account/wallet`, label: "View wallet" },
+    ),
+  };
+}
+
+export function accountApprovedEmail() {
+  return {
+    subject: "Your account is approved",
+    html: layout(
+      "Your account is approved",
+      "<p>You can now book shipments. Prices are paid from your account balance.</p>",
+      { href: `${appUrl()}/quote`, label: "Request a quote" },
+    ),
+  };
+}

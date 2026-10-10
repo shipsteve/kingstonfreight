@@ -5,7 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { asAddress, shortPlace } from "@/lib/address";
 import { formatMoney } from "@/lib/money";
-import { listMyQuotes, listMyShipments } from "@/server/queries/customer";
+import { getMyAccount, listMyQuotes, listMyShipments } from "@/server/queries/customer";
 
 export const metadata = { title: "Dashboard" };
 
@@ -13,7 +13,7 @@ const SERVICE_LABEL = { PARCEL: "Parcel", COURIER: "Courier", FREIGHT: "Freight"
 const dateFmt = new Intl.DateTimeFormat("en-US", { dateStyle: "medium" });
 
 export default async function DashboardPage() {
-  const [shipments, quotes] = await Promise.all([listMyShipments(), listMyQuotes()]);
+  const [shipments, quotes, account] = await Promise.all([listMyShipments(), listMyQuotes(), getMyAccount()]);
   const openQuotes = quotes.filter((q) => q.status !== "ACCEPTED");
 
   return (
@@ -27,6 +27,21 @@ export default async function DashboardPage() {
           New quote <ArrowRight />
         </Link>
       </div>
+
+      {account?.accountStatus === "PENDING" && (
+        <div
+          role="status"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm"
+        >
+          <p>
+            <span className="font-medium">Your account is pending approval.</span> Add funds to your wallet; once we
+            verify your first payment you can book shipments.
+          </p>
+          <Link href="/account/wallet" className={buttonVariants({ size: "sm" })}>
+            Add funds
+          </Link>
+        </div>
+      )}
 
       <section aria-labelledby="shipments-heading" className="space-y-3">
         <h2 id="shipments-heading" className="text-lg font-medium">
@@ -83,7 +98,8 @@ export default async function DashboardPage() {
                       {shortPlace(asAddress(q.origin))} → {shortPlace(asAddress(q.destination))}
                     </p>
                     <p>
-                      {q.priceCents != null ? formatMoney(q.priceCents) : "Price pending"} · {dateFmt.format(q.createdAt)}
+                      {q.priceCents != null ? formatMoney(q.priceCents) : "Price pending"} ·{" "}
+                      {dateFmt.format(q.createdAt)}
                     </p>
                   </CardContent>
                 </Card>

@@ -13,6 +13,11 @@ describe("routeAccess", () => {
     expect(routeAccess("/admin/pricing", null)).toEqual({ allow: false, redirect: "/login?next=%2Fadmin%2Fpricing" });
   });
 
+  it("requires login for the wallet", () => {
+    expect(routeAccess("/account/wallet", null)).toEqual({ allow: false, redirect: "/login?next=%2Faccount%2Fwallet" });
+    expect(routeAccess("/account/wallet", "CUSTOMER")).toEqual({ allow: true });
+  });
+
   it("keeps customers out of admin", () => {
     expect(routeAccess("/admin", "CUSTOMER")).toEqual({ allow: false, redirect: "/" });
     expect(routeAccess("/dashboard", "CUSTOMER")).toEqual({ allow: true });
