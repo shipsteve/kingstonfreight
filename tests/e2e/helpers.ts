@@ -60,6 +60,6 @@ export async function login(page: Page, email: string, password: string, next = 
 
 export async function trackingNumberOn(page: Page): Promise<string> {
   const text = (await page.locator("h1.font-mono").first().textContent())?.trim();
-  expect(text).toMatch(/^SHP-[A-Z0-9]{10}$/);
+  expect(text).toMatch(/^876-[0-9]{8}$/);
   return text!;
 }

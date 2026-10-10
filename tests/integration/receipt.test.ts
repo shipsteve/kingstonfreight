@@ -55,7 +55,7 @@ describe("receipt data", () => {
       issuedBy: "ops@example.com",
       contents: "Books",
     });
-    expect(r?.trackingNumber).toMatch(/^SHP-/);
+    expect(r?.trackingNumber).toMatch(/^876-[0-9]{8}$/);
   });
 
   it("gives the owner their receipt and hides it from everyone else", async () => {

@@ -51,7 +51,7 @@ describe("admin orders", () => {
   it("creates a counter-paid order for someone without an account", async () => {
     const res = await createAdminOrder(order());
     if (!res.ok) throw new Error(res.error);
-    expect(res.data.trackingNumber).toMatch(/^SHP-/);
+    expect(res.data.trackingNumber).toMatch(/^876-[0-9]{8}$/);
     const s = await db.shipment.findUniqueOrThrow({ where: { id: res.data.shipmentId }, include: { events: true } });
     expect(s).toMatchObject({
       status: "BOOKED",

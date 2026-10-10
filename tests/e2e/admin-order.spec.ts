@@ -33,7 +33,7 @@ test("admin creates a counter order with dates, prints the receipt, and the QR t
   await expect(page).toHaveURL(/\/receipt$/);
 
   const tracking = (await page.getByTestId("receipt-tracking").textContent())!.trim();
-  expect(tracking).toMatch(/^SHP-[A-Z0-9]{10}$/);
+  expect(tracking).toMatch(/^876-[0-9]{8}$/);
   await expect(page.locator('[data-testid="receipt-qr"] svg')).toHaveCount(1);
   await expect(page.getByTestId("receipt-chargeable")).toContainText("kg");
   await expect(page.getByText("JFK → CDG")).toBeVisible();

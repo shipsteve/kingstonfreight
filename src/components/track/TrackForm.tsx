@@ -24,7 +24,7 @@ export function TrackForm({ className, defaultValue = "" }: { className?: string
     >
       <Input
         aria-label="Tracking number"
-        placeholder="SHP-XXXXXXXXXX"
+        placeholder="876-12345675"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         className="h-11 font-mono"

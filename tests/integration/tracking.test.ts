@@ -3,7 +3,7 @@ import { db } from "@/server/db";
 import { getPublicTracking } from "@/server/tracking";
 import { makeUser, nycAddress, parisAddress, resetDb, smallBox } from "./helpers";
 
-async function shipment(status: "BOOKED" | "IN_TRANSIT", trackingNumber = "SHP-ABCD234567") {
+async function shipment(status: "BOOKED" | "IN_TRANSIT", trackingNumber = "876-48379155") {
   const user = await makeUser(`${trackingNumber.toLowerCase()}@example.com`);
   const quote = await db.quote.create({
     data: {
@@ -42,13 +42,13 @@ describe("getPublicTracking", () => {
 
   it("finds a shipment regardless of case and surrounding spaces", async () => {
     await shipment("IN_TRANSIT");
-    expect((await getPublicTracking("shp-abcd234567"))?.trackingNumber).toBe("SHP-ABCD234567");
-    expect((await getPublicTracking("  SHP-ABCD234567 "))?.trackingNumber).toBe("SHP-ABCD234567");
+    expect((await getPublicTracking("87648379155"))?.trackingNumber).toBe("876-48379155");
+    expect((await getPublicTracking("  awb 876 4837 9155 "))?.trackingNumber).toBe("876-48379155");
   });
 
   it("returns events oldest first with city/country route only", async () => {
     await shipment("IN_TRANSIT");
-    const t = await getPublicTracking("SHP-ABCD234567");
+    const t = await getPublicTracking("876-48379155");
     expect(t).toMatchObject({
       status: "IN_TRANSIT",
       serviceType: "PARCEL",
@@ -61,7 +61,7 @@ describe("getPublicTracking", () => {
   it("includes city coordinates when the shipment has them", async () => {
     const s = await shipment("IN_TRANSIT");
     await db.shipment.update({ where: { id: s.id }, data: { originLat: 40.71, originLng: -74, destLat: 48.86, destLng: 2.35 } });
-    const t = await getPublicTracking("SHP-ABCD234567");
+    const t = await getPublicTracking("876-48379155");
     expect(t?.origin).toEqual({ city: "New York", countryCode: "US", lat: 40.71, lng: -74 });
     expect(t?.destination).toEqual({ city: "Paris", countryCode: "FR", lat: 48.86, lng: 2.35 });
   });
@@ -78,7 +78,7 @@ describe("getPublicTracking", () => {
         estimatedArrival: new Date("2026-10-23T12:00:00Z"),
       },
     });
-    const t = await getPublicTracking("SHP-ABCD234567");
+    const t = await getPublicTracking("876-48379155");
     expect(t).toMatchObject({ transportMode: "AIR", departurePort: "JFK", arrivalPort: "CDG" });
     expect(t?.estimatedArrival?.toISOString()).toBe("2026-10-23T12:00:00.000Z");
   });
@@ -96,7 +96,7 @@ describe("getPublicTracking", () => {
         packages: [{ weightKg: 5, lengthCm: 1, widthCm: 1, heightCm: 1, qty: 1 }],
       },
     });
-    const json = JSON.stringify(await getPublicTracking("SHP-ABCD234567"));
+    const json = JSON.stringify(await getPublicTracking("876-48379155"));
     expect(json).not.toMatch(
       /"(priceCents|name|phone|line1|line2|email|postcode|userId|customerEmail|contents|declaredValueCents|actualWeightKg|chargeableWeightKg|packages|weightKg)"/,
     );
@@ -115,7 +115,12 @@ describe("getPublicTracking", () => {
   });
 
   it("returns null for an unknown but well-formed number", async () => {
-    expect(await getPublicTracking("SHP-ZZZZZZZZZZ")).toBeNull();
+    expect(await getPublicTracking("876-00000000")).toBeNull();
+  });
+
+  it("still finds legacy SHP- numbers", async () => {
+    await shipment("BOOKED", "SHP-ABCD234567");
+    expect((await getPublicTracking(" shp-abcd234567 "))?.trackingNumber).toBe("SHP-ABCD234567");
   });
 
 });
