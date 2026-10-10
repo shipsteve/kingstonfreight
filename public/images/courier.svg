@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Delivery van driving past city buildings">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8fc2ff"/>
+      <stop offset="1" stop-color="#dcecff"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#sky)"/>
+  <g fill="#ffffff" opacity="0.85">
+    <ellipse cx="160" cy="90" rx="60" ry="18"/><ellipse cx="200" cy="80" rx="40" ry="20"/>
+    <ellipse cx="610" cy="120" rx="70" ry="18"/><ellipse cx="650" cy="108" rx="40" ry="18"/>
+  </g>
+  <!-- back buildings -->
+  <g fill="#9db4d8">
+    <rect x="20" y="170" width="110" height="280"/><rect x="250" y="120" width="90" height="330"/>
+    <rect x="470" y="190" width="120" height="260"/><rect x="690" y="150" width="100" height="300"/>
+  </g>
+  <!-- front buildings with windows -->
+  <g>
+    <rect x="110" y="230" width="150" height="220" fill="#3f5788"/>
+    <rect x="340" y="200" width="140" height="250" fill="#2f4475"/>
+    <rect x="570" y="250" width="140" height="200" fill="#465f92"/>
+  </g>
+  <g fill="#ffe08a" opacity="0.9">
+    <rect x="128" y="250" width="24" height="20"/><rect x="170" y="250" width="24" height="20"/><rect x="212" y="250" width="24" height="20"/>
+    <rect x="128" y="290" width="24" height="20"/><rect x="212" y="290" width="24" height="20"/>
+    <rect x="170" y="330" width="24" height="20"/><rect x="128" y="370" width="24" height="20"/><rect x="212" y="370" width="24" height="20"/>
+    <rect x="358" y="222" width="22" height="20"/><rect x="398" y="222" width="22" height="20"/><rect x="438" y="222" width="22" height="20"/>
+    <rect x="398" y="262" width="22" height="20"/><rect x="358" y="302" width="22" height="20"/><rect x="438" y="302" width="22" height="20"/>
+    <rect x="398" y="342" width="22" height="20"/><rect x="358" y="382" width="22" height="20"/>
+    <rect x="588" y="272" width="24" height="20"/><rect x="630" y="272" width="24" height="20"/><rect x="672" y="312" width="24" height="20"/>
+    <rect x="588" y="352" width="24" height="20"/><rect x="630" y="352" width="24" height="20"/>
+  </g>
+  <!-- street -->
+  <rect y="450" width="800" height="150" fill="#2b3346"/>
+  <rect y="450" width="800" height="16" fill="#8a96ad"/>
+  <g fill="#f2f4f8"><rect x="30" y="530" width="70" height="8"/><rect x="170" y="530" width="70" height="8"/><rect x="310" y="530" width="70" height="8"/>
+    <rect x="450" y="530" width="70" height="8"/><rect x="590" y="530" width="70" height="8"/><rect x="730" y="530" width="70" height="8"/></g>
+
+  <!-- van -->
+  <g transform="translate(250 380)">
+    <path d="M0 40 h220 v100 h-220z" fill="#f6f8fc"/>
+    <path d="M220 60 h60 q30 0 40 30 l12 30 v20 h-112z" fill="#f6f8fc"/>
+    <path d="M232 70 h46 q18 0 26 22 l6 16 h-78z" fill="#7fb2f0"/>
+    <rect x="0" y="100" width="332" height="10" fill="#3b6fd8"/>
+    <rect x="20" y="60" width="140" height="30" rx="4" fill="#3b6fd8"/>
+    <text x="90" y="81" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#fff" letter-spacing="2">EXPRESS</text>
+    <rect x="322" y="118" width="14" height="8" rx="2" fill="#ffd166"/>
+    <g><circle cx="60" cy="142" r="26" fill="#1c2233"/><circle cx="60" cy="142" r="11" fill="#9aa5ba"/>
+      <circle cx="260" cy="142" r="26" fill="#1c2233"/><circle cx="260" cy="142" r="11" fill="#9aa5ba"/></g>
+  </g>
+  <g stroke="#ffffff" stroke-opacity="0.6" stroke-width="5" stroke-linecap="round">
+    <line x1="150" y1="450" x2="215" y2="450"/><line x1="120" y1="480" x2="220" y2="480"/><line x1="170" y1="505" x2="230" y2="505"/>
+  </g>
+</svg>

@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Stacked parcels on a sorting conveyor">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#dfe9fb"/>
+      <stop offset="1" stop-color="#b9cdf0"/>
+    </linearGradient>
+    <linearGradient id="belt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a4560"/>
+      <stop offset="1" stop-color="#232b40"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <g fill="#c7d6f2">
+    <rect x="40" y="60" width="120" height="300" rx="6"/><rect x="640" y="40" width="120" height="320" rx="6"/>
+  </g>
+  <g fill="#aebfe3"><rect x="52" y="80" width="96" height="10"/><rect x="52" y="150" width="96" height="10"/><rect x="52" y="220" width="96" height="10"/>
+    <rect x="652" y="70" width="96" height="10"/><rect x="652" y="150" width="96" height="10"/><rect x="652" y="230" width="96" height="10"/></g>
+
+  <!-- conveyor -->
+  <rect x="0" y="430" width="800" height="40" fill="url(#belt)"/>
+  <g fill="#59647f"><circle cx="40" cy="490" r="20"/><circle cx="200" cy="490" r="20"/><circle cx="360" cy="490" r="20"/>
+    <circle cx="520" cy="490" r="20"/><circle cx="680" cy="490" r="20"/></g>
+  <rect x="0" y="500" width="800" height="100" fill="#8ea4cf"/>
+
+  <!-- parcel helper: front, top, side faces -->
+  <g>
+    <path d="M150 330 h150 v100 h-150z" fill="#c8925a"/>
+    <path d="M150 330 l30 -24 h150 l-30 24z" fill="#e0b07a"/>
+    <path d="M300 330 l30 -24 v100 l-30 24z" fill="#a8763f"/>
+    <rect x="215" y="330" width="20" height="100" fill="#e6c595" opacity="0.8"/>
+    <rect x="166" y="352" width="44" height="30" rx="3" fill="#fff"/>
+    <g fill="#4a5470"><rect x="171" y="358" width="30" height="3"/><rect x="171" y="365" width="22" height="3"/><rect x="171" y="372" width="26" height="3"/></g>
+  </g>
+  <g>
+    <path d="M180 250 h110 v80 h-110z" fill="#d39e66"/>
+    <path d="M180 250 l24 -20 h110 l-24 20z" fill="#eabf8c"/>
+    <path d="M290 250 l24 -20 v80 l-24 20z" fill="#b0804a"/>
+    <rect x="228" y="250" width="16" height="80" fill="#ecd0a4" opacity="0.8"/>
+  </g>
+  <g>
+    <path d="M420 350 h120 v80 h-120z" fill="#c8925a"/>
+    <path d="M420 350 l26 -20 h120 l-26 20z" fill="#e0b07a"/>
+    <path d="M540 350 l26 -20 v80 l-26 20z" fill="#a8763f"/>
+    <rect x="472" y="350" width="16" height="80" fill="#e6c595" opacity="0.8"/>
+    <rect x="500" y="368" width="32" height="22" rx="3" fill="#fff"/>
+    <g fill="#2f6fe0"><rect x="504" y="373" width="2" height="12"/><rect x="508" y="373" width="1" height="12"/><rect x="511" y="373" width="3" height="12"/>
+      <rect x="516" y="373" width="1" height="12"/><rect x="519" y="373" width="2" height="12"/><rect x="523" y="373" width="3" height="12"/></g>
+  </g>
+  <g>
+    <path d="M600 380 h80 v50 h-80z" fill="#d39e66"/>
+    <path d="M600 380 l18 -14 h80 l-18 14z" fill="#eabf8c"/>
+    <path d="M680 380 l18 -14 v50 l-18 14z" fill="#b0804a"/>
+  </g>
+  <g>
+    <path d="M30 380 h90 v50 h-90z" fill="#3b6fd8"/>
+    <path d="M30 380 l18 -14 h90 l-18 14z" fill="#6390ea"/>
+    <path d="M120 380 l18 -14 v50 l-18 14z" fill="#2a55ad"/>
+    <rect x="68" y="380" width="12" height="50" fill="#ffd166"/>
+  </g>
+  <!-- scanner arch -->
+  <path d="M380 440 V170 h220 V440" fill="none" stroke="#2a3552" stroke-width="16"/>
+  <rect x="396" y="186" width="188" height="10" fill="#ff5a5a" opacity="0.8"/>
+</svg>

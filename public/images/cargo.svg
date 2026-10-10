@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" role="img" aria-label="Shipping containers stacked at a port with a crane and cargo ship">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd9a8"/>
+      <stop offset="1" stop-color="#ffefd6"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2f5d9a"/>
+      <stop offset="1" stop-color="#1b3864"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#sky)"/>
+  <rect y="400" width="800" height="200" fill="url(#sea)"/>
+  <g stroke="#ffffff" stroke-opacity="0.25" stroke-width="3"><line x1="40" y1="450" x2="140" y2="450"/><line x1="560" y1="480" x2="700" y2="480"/><line x1="300" y1="540" x2="420" y2="540"/></g>
+
+  <!-- quay -->
+  <rect x="0" y="380" width="430" height="40" fill="#5a6378"/>
+
+  <!-- gantry crane -->
+  <g stroke="#e8a33a" stroke-width="12" fill="none" stroke-linecap="square">
+    <path d="M300 380 V120 M380 380 V120 M300 140 H380 M280 120 H720 M300 260 L380 200 M300 200 L380 260"/>
+  </g>
+  <rect x="560" y="126" width="40" height="22" fill="#c9861f"/>
+  <line x1="580" y1="148" x2="580" y2="250" stroke="#2b3346" stroke-width="3"/>
+  <rect x="540" y="250" width="80" height="34" fill="#2fa36b"/>
+
+  <!-- stacked containers on quay -->
+  <g>
+    <rect x="20" y="320" width="120" height="60" fill="#d64545"/><rect x="140" y="320" width="120" height="60" fill="#3b6fd8"/>
+    <rect x="20" y="260" width="120" height="60" fill="#e8a33a"/><rect x="140" y="260" width="120" height="60" fill="#2fa36b"/>
+    <rect x="80" y="200" width="120" height="60" fill="#6a4fc7"/>
+  </g>
+  <g stroke="#000" stroke-opacity="0.18" stroke-width="3">
+    <path d="M40 326v48M60 326v48M80 326v48M100 326v48M120 326v48M160 326v48M180 326v48M200 326v48M220 326v48M240 326v48"/>
+    <path d="M40 266v48M60 266v48M80 266v48M100 266v48M120 266v48M160 266v48M180 266v48M200 266v48M220 266v48M240 266v48"/>
+    <path d="M100 206v48M120 206v48M140 206v48M160 206v48M180 206v48"/>
+  </g>
+
+  <!-- ship -->
+  <g>
+    <path d="M430 400 H790 L760 470 H460 Z" fill="#2a3350"/>
+    <rect x="430" y="392" width="360" height="10" fill="#d64545"/>
+    <rect x="700" y="300" width="70" height="92" fill="#f2f4f8"/>
+    <g fill="#7fb2f0"><rect x="710" y="312" width="14" height="10"/><rect x="732" y="312" width="14" height="10"/><rect x="710" y="332" width="14" height="10"/><rect x="732" y="332" width="14" height="10"/></g>
+    <rect x="735" y="270" width="16" height="30" fill="#2a3350"/>
+    <g>
+      <rect x="460" y="352" width="76" height="40" fill="#3b6fd8"/><rect x="536" y="352" width="76" height="40" fill="#e8a33a"/><rect x="612" y="352" width="76" height="40" fill="#2fa36b"/>
+      <rect x="460" y="312" width="76" height="40" fill="#d64545"/><rect x="536" y="312" width="76" height="40" fill="#6a4fc7"/><rect x="612" y="312" width="76" height="40" fill="#3b6fd8"/>
+    </g>
+  </g>
+</svg>
