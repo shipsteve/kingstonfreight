@@ -91,9 +91,9 @@ export default function TermsPage() {
       <h2>9. Changes and governing law</h2>
       <p>
         We may update these terms; the version in force when you book applies to that booking.
-        {l.governingState
-          ? ` These terms are governed by the laws of the State of ${l.governingState} and of the United States.`
-          : " These terms are governed by the laws of the United States and the state where we are established."}
+        {l.governingLaw
+          ? ` These terms are governed by the laws of ${l.governingLaw}, and the courts of ${l.governingLaw} have jurisdiction over any dispute.`
+          : " These terms are governed by the laws of the place where we are established."}
       </p>
 
       <h2>10. Contact</h2>

@@ -51,7 +51,7 @@ All settings live in a single `.env` file (git-ignored, never committed). On Ver
 | `HOME_COUNTRY` | no (default `US`) | Defines "domestic" for zones and local courier |
 | `CURRENCY` | no (default `USD`) | Single currency; amounts are stored in cents |
 | `COMPANY_NAME` | no (default `KingstonFreight`) | Shown in header, footer, titles, receipts |
-| `COMPANY_LEGAL_NAME`, `COMPANY_ADDRESS`, `SUPPORT_EMAIL`, `SUPPORT_PHONE`, `GOVERNING_STATE` | recommended | Shown on the legal and contact pages; unset values are left out |
+| `COMPANY_LEGAL_NAME`, `COMPANY_ADDRESS`, `SUPPORT_EMAIL`, `SUPPORT_PHONE`, `GOVERNING_LAW` | recommended | Shown on the legal and contact pages; unset values are left out. `GOVERNING_LAW` is the jurisdiction, e.g. `Jamaica` |
 | `RESEND_API_KEY`, `EMAIL_FROM` | no | Without a key, emails are logged to the console |
 | `TRUST_PROXY` | self-hosted behind a proxy | `1` to read the client IP from the proxy's `x-forwarded-for` hop. Vercel is detected automatically |
 | `GEOCODE_PROVIDER` | no (default `nominatim`) | City lookups for the tracking globe (sends only city + country). `off` uses country centres |

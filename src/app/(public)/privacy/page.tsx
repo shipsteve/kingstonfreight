@@ -57,7 +57,8 @@ export default function PrivacyPage() {
       <h2>Your choices</h2>
       <p>
         You can ask for a copy of your data, or ask us to correct or delete it where we are not required to keep it.
-        Depending on your state (for example California) you may have additional rights.
+        Depending on where you live you may have additional rights under local data protection law
+        {l.governingLaw ? ` (including the law of ${l.governingLaw})` : ""}.
         {l.supportEmail ? ` Email ${l.supportEmail} to make a request.` : " Use our contact page to make a request."}
       </p>
 

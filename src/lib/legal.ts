@@ -10,6 +10,7 @@ export function legal() {
     address: clean(process.env.COMPANY_ADDRESS),
     supportEmail: clean(process.env.SUPPORT_EMAIL),
     supportPhone: clean(process.env.SUPPORT_PHONE),
-    governingState: clean(process.env.GOVERNING_STATE),
+    /** Jurisdiction whose laws govern the Terms, e.g. "Jamaica" or "the State of New York". */
+    governingLaw: clean(process.env.GOVERNING_LAW),
   };
 }
