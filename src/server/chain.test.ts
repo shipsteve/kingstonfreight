@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { isTxHash, lookupTx, normalizeTxHash, parseTx, resetPriceCache } from "./chain";
 
-const OURS = "bc1qourxaddressxxxxxxxxxxxxxxxxxxxxxxxxxx";
+const OURS = "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4";
 const TX = "a".repeat(64);
 
 const txJson = (confirmed: boolean) => ({
@@ -72,7 +72,7 @@ describe("lookupTx", () => {
   });
 
   it("uses litecoinspace for LTC", async () => {
-    vi.stubEnv("LTC_ADDRESS", "ltc1qours");
+    vi.stubEnv("LTC_ADDRESS", "LZFDN9E4gYDDykk9Q76U96yxXVnrvyFCUJ");
     const fetch = vi.fn<(url: string) => Promise<Response>>(async () => json({}, 404));
     vi.stubGlobal("fetch", fetch);
     const check = await lookupTx("LTC", TX);

@@ -1,15 +1,26 @@
-export type CoinCode = "BTC" | "LTC";
+import { isValidAddress } from "@/server/crypto-address";
+import { COIN_NAMES, type CoinCode } from "./coins";
 
-export const COIN_NAMES: Record<CoinCode, string> = { BTC: "Bitcoin", LTC: "Litecoin" };
+export { COIN_NAMES, type CoinCode };
 
-/** Receiving addresses and limits from env. A coin without an address is not offered. */
+/**
+ * Receiving addresses and limits from env (server-only). A coin is offered only if its address passes
+ * checksum validation, so a typo in BTC_ADDRESS/LTC_ADDRESS can never be shown to customers.
+ * ALLOW_TEST_WALLET_ADDRESSES=1 (E2E only) skips validation for placeholder addresses.
+ */
 export function walletConfig(): { minTopUpCents: number; coins: { coin: CoinCode; address: string }[] } {
   const min = Number(process.env.MIN_TOPUP_USD || 50);
+  const allowTest = process.env.ALLOW_TEST_WALLET_ADDRESSES === "1";
   const coins: { coin: CoinCode; address: string }[] = [];
-  const btc = process.env.BTC_ADDRESS?.trim();
-  const ltc = process.env.LTC_ADDRESS?.trim();
-  if (btc) coins.push({ coin: "BTC", address: btc });
-  if (ltc) coins.push({ coin: "LTC", address: ltc });
+  for (const coin of ["BTC", "LTC"] as const) {
+    const address = process.env[`${coin}_ADDRESS`]?.trim();
+    if (!address) continue;
+    if (!allowTest && !isValidAddress(coin, address)) {
+      console.error(`[wallet] ${coin}_ADDRESS is not a valid ${COIN_NAMES[coin]} address; ${coin} top-ups are disabled`);
+      continue;
+    }
+    coins.push({ coin, address });
+  }
   return { minTopUpCents: Math.round((Number.isFinite(min) && min > 0 ? min : 50) * 100), coins };
 }
 

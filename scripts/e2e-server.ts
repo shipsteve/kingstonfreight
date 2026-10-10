@@ -24,6 +24,7 @@ async function main() {
     RESEND_API_KEY: "",
     GEOCODE_PROVIDER: "off",
     CHAIN_LOOKUP: "off",
+    ALLOW_TEST_WALLET_ADDRESSES: "1",
     BTC_ADDRESS: "bc1q-e2e-test-address",
     LTC_ADDRESS: "ltc1q-e2e-test-address",
     MIN_TOPUP_USD: "50",

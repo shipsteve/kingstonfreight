@@ -54,7 +54,7 @@ describe("admin funding", () => {
   beforeEach(async () => {
     await resetDb();
     vi.clearAllMocks();
-    vi.stubEnv("BTC_ADDRESS", "bc1qours");
+    vi.stubEnv("BTC_ADDRESS", "bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4");
     vi.mocked(lookupTx).mockResolvedValue(check());
     admin = await makeUser("ops@example.com", "ADMIN");
     ann = await makeUser("ann@example.com");

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { dollarsToCents, formatMoney } from "@/lib/money";
-import { COIN_NAMES, type CoinCode } from "@/lib/wallet-config";
+import { COIN_NAMES, type CoinCode } from "@/lib/coins";
 import { submitTopUp } from "@/server/actions/wallet";
 import { cn } from "@/lib/utils";
 
@@ -80,6 +80,12 @@ export function AddFundsForm({ coins, minTopUpCents }: { coins: CoinOption[]; mi
             Only send {option.coin} on the {COIN_NAMES[option.coin]} network. Other coins or networks sent here are lost.
             {option.usdPrice && <> 1 {option.coin} ≈ {formatMoney(Math.round(option.usdPrice * 100))}.</>}
           </p>
+          {option.coin === "LTC" && (
+            <p role="note" className="rounded-md bg-amber-500/10 p-2 text-xs text-amber-800 dark:text-amber-300">
+              Don&apos;t send Litecoin from a MWEB (confidential/private) address. Those deposits can&apos;t be
+              received and will be lost.
+            </p>
+          )}
         </div>
       </div>
 
