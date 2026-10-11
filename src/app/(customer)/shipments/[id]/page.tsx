@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { asAddress, shortPlace } from "@/lib/address";
 import { formatMoney } from "@/lib/money";
 import { getMyShipment } from "@/server/queries/customer";
+import { TrackingStopPoints } from "@/components/track/TrackingStopPoints";
+import { plannedAirportStops } from "@/lib/geo/airports";
 
 export const metadata = { title: "Shipment" };
 
@@ -49,6 +51,7 @@ export default async function ShipmentPage({ params }: { params: Promise<{ id: s
               className="mt-1"
               departureDate={shipment.departureDate}
               estimatedArrival={shipment.estimatedArrival}
+              estimatedDelivery={shipment.estimatedDelivery}
               transportMode={shipment.transportMode}
               departurePort={shipment.departurePort}
               arrivalPort={shipment.arrivalPort}
@@ -73,6 +76,7 @@ export default async function ShipmentPage({ params }: { params: Promise<{ id: s
           <CardTitle className="text-base">Tracking history</CardTitle>
         </CardHeader>
         <CardContent>
+          <div className="mb-5"><TrackingStopPoints nextStop={shipment.nextStop} status={shipment.status} stopCount={plannedAirportStops(shipment).length || 1} /></div>
           <StatusTimeline events={shipment.events} />
         </CardContent>
       </Card>

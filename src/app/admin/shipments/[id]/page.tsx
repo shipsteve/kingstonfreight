@@ -39,7 +39,7 @@ export default async function AdminShipmentPage({ params }: { params: Promise<{ 
   const s = await getShipmentForAdmin(id);
   if (!s) notFound();
 
-  const nextStatuses = ADMIN_SETTABLE_STATUSES.filter((to) => canTransition(s.status, to));
+  const nextStatuses = [s.status, ...ADMIN_SETTABLE_STATUSES.filter((to) => canTransition(s.status, to))];
 
   return (
     <div className="max-w-4xl space-y-6">
@@ -126,6 +126,8 @@ export default async function AdminShipmentPage({ params }: { params: Promise<{ 
               shipmentId={s.id}
               departureDate={toDateInput(s.departureDate)}
               estimatedArrival={toDateInput(s.estimatedArrival)}
+              estimatedDelivery={toDateInput(s.estimatedDelivery)}
+              nextStop={s.nextStop}
             />
           </div>
         </CardContent>

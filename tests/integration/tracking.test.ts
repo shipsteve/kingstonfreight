@@ -76,11 +76,15 @@ describe("getPublicTracking", () => {
         arrivalPort: "CDG",
         departureDate: new Date("2026-10-21T12:00:00Z"),
         estimatedArrival: new Date("2026-10-23T12:00:00Z"),
+        estimatedDelivery: new Date("2026-10-24T12:00:00Z"),
+        nextStop: "New York cargo hub",
       },
     });
     const t = await getPublicTracking("876-48379155");
     expect(t).toMatchObject({ transportMode: "AIR", departurePort: "JFK", arrivalPort: "CDG" });
     expect(t?.estimatedArrival?.toISOString()).toBe("2026-10-23T12:00:00.000Z");
+    expect(t?.estimatedDelivery?.toISOString()).toBe("2026-10-24T12:00:00.000Z");
+    expect(t?.nextStop).toBe("New York cargo hub");
   });
 
   it("exposes no price, names, phone numbers, street lines, emails, weights or contents", async () => {

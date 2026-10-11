@@ -48,7 +48,7 @@ export function TrackingRouteCard({
             <ModeIcon className="size-4.5" />
           </div>
           <div className="mt-1 flex items-center gap-1 text-[10px] font-medium text-muted-foreground">
-            <span>Direct</span>
+            <span>Route</span>
             <ArrowRight className="size-3" />
           </div>
         </div>

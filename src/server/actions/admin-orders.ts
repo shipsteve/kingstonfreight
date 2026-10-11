@@ -68,6 +68,7 @@ export async function createAdminOrder(
             arrivalPort: o.arrivalPort ?? null,
             departureDate: o.departureDate,
             estimatedArrival: o.estimatedArrival,
+            estimatedDelivery: o.estimatedDelivery,
             packages: o.packages,
             actualWeightKg: weights.actualKg,
             chargeableWeightKg: weights.chargeableKg,
@@ -109,12 +110,15 @@ export async function updateShipmentSchedule(
     await requireAdmin();
     const parsed = scheduleSchema.safeParse(input);
     if (!parsed.success) return fail(parsed.error.issues[0].message);
-    const { shipmentId, departureDate, estimatedArrival } = parsed.data;
+    const { shipmentId, departureDate, estimatedArrival, estimatedDelivery, nextStop } = parsed.data;
     const { count } = await db.shipment.updateMany({
       where: { id: shipmentId },
-      data: { departureDate, estimatedArrival },
+      data: { departureDate, estimatedArrival, estimatedDelivery, nextStop },
     });
     if (count !== 1) return fail("Not found");
+    const shipment = await db.shipment.findUnique({ where: { id: shipmentId }, select: { trackingNumber: true } });
+    if (shipment) safeRevalidate(revalidatePath, `/track/${shipment.trackingNumber}`);
+    safeRevalidate(revalidatePath, `/shipments/${shipmentId}`);
     safeRevalidate(revalidatePath, `/admin/shipments/${shipmentId}`);
     return ok({ id: shipmentId });
   });

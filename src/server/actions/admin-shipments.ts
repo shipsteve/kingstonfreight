@@ -35,19 +35,21 @@ const statusSchema = z.object({
     .optional()
     .or(z.literal("").transform(() => undefined)),
   note: z.string().trim().max(2000).optional(),
-});
+  lat: z.number().finite().min(-90).max(90).optional(),
+  lng: z.number().finite().min(-180).max(180).optional(),
+}).refine((v) => (v.lat === undefined) === (v.lng === undefined), "Enter both latitude and longitude");
 
 export async function updateShipmentStatus(input: z.input<typeof statusSchema>): Promise<ActionResult<{ id: string }>> {
   return guarded(async () => {
     await requireAdmin();
     const parsed = statusSchema.safeParse(input);
     if (!parsed.success) return fail(parsed.error.issues[0].message);
-    const { shipmentId, status, location, countryCode, note } = parsed.data;
+    const { shipmentId, status, location, countryCode, note, lat, lng } = parsed.data;
 
     const result = await db.$transaction(async (tx) => {
       const shipment = await tx.shipment.findUnique({ where: { id: shipmentId }, include: { user: true } });
       if (!shipment) return { error: "Not found" } as const;
-      if (!canTransition(shipment.status, status)) {
+      if (shipment.status !== status && !canTransition(shipment.status, status)) {
         return { error: `Cannot move from ${shipment.status} to ${status}` } as const;
       }
       // Guard against a concurrent change between the read and the write.
@@ -56,9 +58,10 @@ export async function updateShipmentStatus(input: z.input<typeof statusSchema>):
         data: { status },
       });
       if (count !== 1) return { error: "Shipment changed meanwhile; reload and try again" } as const;
-      if (status === "CANCELLED") await refundShipment(tx, shipmentId);
+      if (status === "CANCELLED" && shipment.status !== "CANCELLED") await refundShipment(tx, shipmentId);
       const event = await tx.trackingEvent.create({
-        data: { shipmentId, status, location, countryCode: countryCode ?? null, note: note || null },
+        data: { shipmentId, status, location, countryCode: countryCode ?? null, note: note || null,
+          lat: lat ?? null, lng: lng ?? null, confirmedAt: new Date() },
       });
       return { shipment, event } as const;
     });
@@ -67,6 +70,8 @@ export async function updateShipmentStatus(input: z.input<typeof statusSchema>):
     const to = result.shipment.user?.email ?? result.shipment.customerEmail;
     if (to) await sendEmail({ to, ...statusChangedEmail(result.shipment, result.event) });
     safeRevalidate(revalidatePath, `/admin/shipments/${shipmentId}`);
+    safeRevalidate(revalidatePath, `/track/${result.shipment.trackingNumber}`);
+    safeRevalidate(revalidatePath, `/shipments/${shipmentId}`);
     return ok({ id: shipmentId });
   });
 }

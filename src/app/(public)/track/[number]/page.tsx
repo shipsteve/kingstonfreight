@@ -7,6 +7,7 @@ import { TrackingHeroCard } from "@/components/track/TrackingHeroCard";
 import { TrackingProgressStepper } from "@/components/track/TrackingProgressStepper";
 import { TrackingQuickActions } from "@/components/track/TrackingQuickActions";
 import { TrackingRouteCard } from "@/components/track/TrackingRouteCard";
+import { TrackingTransitCard } from "@/components/track/TrackingTransitCard";
 import { clientIp } from "@/server/client-ip";
 import { rateLimit } from "@/server/rate-limit";
 import { getPublicTracking } from "@/server/tracking";
@@ -47,6 +48,8 @@ export default async function TrackingPage({ params }: { params: Promise<{ numbe
         arrivalPort={t.arrivalPort}
         departureDate={t.departureDate}
         estimatedArrival={t.estimatedArrival}
+        estimatedDelivery={t.estimatedDelivery}
+        deliveredAt={t.status === "DELIVERED" ? t.events.find((e) => e.status === "DELIVERED")?.createdAt ?? null : null}
         latestLocation={latest?.location}
       />
 
@@ -55,6 +58,7 @@ export default async function TrackingPage({ params }: { params: Promise<{ numbe
 
       {/* Quick Actions & Manage Shipment Bar */}
       <TrackingQuickActions trackingNumber={t.trackingNumber} />
+      <TrackingTransitCard tracking={t} />
 
       {/* Main Grid: Left Route & Milestone Log, Right 3D Globe & Specs */}
       <div className="grid gap-6 lg:grid-cols-[1.15fr_1fr]">

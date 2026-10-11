@@ -1,4 +1,4 @@
-import type { BillTo, PaymentMethod, PaymentStatus, ServiceType, TransportMode } from "@prisma/client";
+import type { BillTo, PaymentMethod, PaymentStatus, ServiceType, ShipmentStatus, TransportMode } from "@prisma/client";
 import { asAddress } from "@/lib/address";
 import type { Address, PackageInput } from "@/lib/pricing/types";
 import { db } from "../db";
@@ -6,6 +6,8 @@ import { getCurrentUser, requireAdmin } from "../session";
 
 export type ReceiptData = {
   trackingNumber: string;
+  status: ShipmentStatus;
+  latestUpdate: { location: string; note: string | null; createdAt: Date; confirmedAt: Date | null } | null;
   issuedAt: Date;
   issuedBy: string;
   serviceType: ServiceType;
@@ -14,6 +16,10 @@ export type ReceiptData = {
   arrivalPort: string | null;
   departureDate: Date | null;
   estimatedArrival: Date | null;
+  estimatedDelivery: Date | null;
+  nextStop: string | null;
+  /** When the DELIVERED update was posted; null until delivered. */
+  deliveredAt: Date | null;
   sender: Address;
   recipient: Address;
   pieces: PackageInput[];
@@ -30,13 +36,15 @@ export type ReceiptData = {
 };
 
 async function load(where: { id: string; userId?: string }): Promise<ReceiptData | null> {
-  const s = await db.shipment.findFirst({ where });
+  const s = await db.shipment.findFirst({ where, include: { events: { orderBy: { createdAt: "desc" }, take: 1 } } });
   if (!s) return null;
   const creator = s.createdById
     ? await db.user.findUnique({ where: { id: s.createdById }, select: { email: true } })
     : null;
   return {
     trackingNumber: s.trackingNumber,
+    status: s.status,
+    latestUpdate: s.events[0] ?? null,
     issuedAt: s.createdAt,
     issuedBy: creator?.email ?? "Online booking",
     serviceType: s.serviceType,
@@ -45,6 +53,18 @@ async function load(where: { id: string; userId?: string }): Promise<ReceiptData
     arrivalPort: s.arrivalPort,
     departureDate: s.departureDate,
     estimatedArrival: s.estimatedArrival,
+    estimatedDelivery: s.estimatedDelivery,
+    nextStop: s.nextStop,
+    deliveredAt:
+      s.status === "DELIVERED"
+        ? ((
+            await db.trackingEvent.findFirst({
+              where: { shipmentId: s.id, status: "DELIVERED" },
+              orderBy: { createdAt: "desc" },
+              select: { createdAt: true },
+            })
+          )?.createdAt ?? null)
+        : null,
     sender: asAddress(s.origin),
     recipient: asAddress(s.destination),
     pieces: (s.packages as PackageInput[] | null) ?? [],

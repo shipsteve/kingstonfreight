@@ -29,6 +29,7 @@ describe("receipt data", () => {
       arrivalPort: "CDG",
       departureDate: "2026-10-21",
       estimatedArrival: "2026-10-23",
+      estimatedDelivery: "2026-10-24",
       packages: [{ weightKg: 5, lengthCm: 40, widthCm: 30, heightCm: 20, qty: 2 }],
       contents: "Books",
       declaredValueCents: 20000,
@@ -72,8 +73,28 @@ describe("receipt data", () => {
     await expect(getReceiptForAdmin(shipmentId)).rejects.toThrow();
   });
 
+  it("includes the estimated delivery date, and the actual delivery date once delivered", async () => {
+    let r = await getReceiptForAdmin(shipmentId);
+    expect(r?.estimatedDelivery?.toISOString()).toBe("2026-10-24T12:00:00.000Z");
+    expect(r?.deliveredAt).toBeNull();
+    await db.shipment.update({ where: { id: shipmentId }, data: { status: "DELIVERED" } });
+    await db.trackingEvent.create({
+      data: { shipmentId, status: "DELIVERED", location: "New York", createdAt: new Date("2026-10-24T15:30:00Z") },
+    });
+    r = await getReceiptForAdmin(shipmentId);
+    expect(r?.deliveredAt?.toISOString()).toBe("2026-10-24T15:30:00.000Z");
+  });
+
   it("returns null for unknown shipments", async () => {
     expect(await getReceiptForAdmin("nope")).toBeNull();
     expect(await db.shipment.count()).toBe(1);
+  });
+
+  it("includes the planned next stop and latest confirmed admin message", async () => {
+    await db.shipment.update({ where: { id: shipmentId }, data: { nextStop: "Departure airport", status: "IN_TRANSIT" } });
+    await db.trackingEvent.create({ data: { shipmentId, status: "IN_TRANSIT", location: "Airport", note: "Cargo checked in", confirmedAt: new Date(), createdAt: new Date(Date.now() + 1000) } });
+    const receipt = await getReceiptForAdmin(shipmentId);
+    expect(receipt).toMatchObject({ status: "IN_TRANSIT", nextStop: "Departure airport", latestUpdate: { location: "Airport", note: "Cargo checked in" } });
+    expect(receipt?.latestUpdate?.confirmedAt).toBeInstanceOf(Date);
   });
 });

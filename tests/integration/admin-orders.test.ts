@@ -23,6 +23,7 @@ const order = (over: Record<string, unknown> = {}) => ({
   arrivalPort: "CDG",
   departureDate: "2026-10-21",
   estimatedArrival: "2026-10-23",
+  estimatedDelivery: "2026-10-24",
   packages: [
     { weightKg: 1.2, lengthCm: 10, widthCm: 10, heightCm: 10, qty: 3 },
     { weightKg: 1, lengthCm: 50, widthCm: 40, heightCm: 30, qty: 1 },
@@ -74,6 +75,7 @@ describe("admin orders", () => {
       priceCents: 12500,
     });
     expect(s.departureDate?.toISOString()).toBe("2026-10-21T12:00:00.000Z");
+    expect(s.estimatedDelivery?.toISOString()).toBe("2026-10-24T12:00:00.000Z");
     expect(s.events).toEqual([expect.objectContaining({ status: "BOOKED", location: "Booked by KingstonFreight" })]);
     expect(vi.mocked(sendEmail)).toHaveBeenCalledWith(
       expect.objectContaining({ to: "walkin@example.com", html: expect.stringContaining(res.data.trackingNumber) }),
@@ -112,13 +114,19 @@ describe("admin orders", () => {
 
   it("rejects an arrival before departure, bad ports and missing contents", async () => {
     expect((await createAdminOrder(order({ estimatedArrival: "2026-10-20" }))).ok).toBe(false);
+    expect(await createAdminOrder(order({ estimatedDelivery: "2026-10-22" }))).toEqual({
+      ok: false,
+      error: "Estimated delivery can't be before arrival",
+    });
     expect((await createAdminOrder(order({ departurePort: "JFKX" }))).ok).toBe(false);
     expect((await createAdminOrder(order({ contents: " " }))).ok).toBe(false);
     expect((await createAdminOrder(order({ priceCents: 0 }))).ok).toBe(false);
   });
 
   it("allows orders without dates or ports", async () => {
-    const res = await createAdminOrder(order({ departurePort: "", arrivalPort: "", departureDate: "", estimatedArrival: "" }));
+    const res = await createAdminOrder(
+      order({ departurePort: "", arrivalPort: "", departureDate: "", estimatedArrival: "", estimatedDelivery: "" }),
+    );
     expect(res.ok).toBe(true);
   });
 
@@ -176,9 +184,32 @@ describe("admin orders", () => {
     expect((await updateShipmentSchedule({ shipmentId: id, departureDate: "2026-11-06", estimatedArrival: "2026-11-05" })).ok).toBe(
       false,
     );
-    await updateShipmentSchedule({ shipmentId: id, departureDate: null, estimatedArrival: null });
+    expect(
+      (
+        await updateShipmentSchedule({
+          shipmentId: id,
+          departureDate: "2026-11-01",
+          estimatedArrival: "2026-11-05",
+          estimatedDelivery: "2026-11-06",
+        })
+      ).ok,
+    ).toBe(true);
+    s = await db.shipment.findUniqueOrThrow({ where: { id } });
+    expect(s.estimatedDelivery?.toISOString()).toBe("2026-11-06T12:00:00.000Z");
+    expect(
+      (
+        await updateShipmentSchedule({
+          shipmentId: id,
+          departureDate: "2026-11-01",
+          estimatedArrival: "2026-11-05",
+          estimatedDelivery: "2026-11-04",
+        })
+      ).ok,
+    ).toBe(false);
+    await updateShipmentSchedule({ shipmentId: id, departureDate: null, estimatedArrival: null, estimatedDelivery: null });
     s = await db.shipment.findUniqueOrThrow({ where: { id } });
     expect(s.departureDate).toBeNull();
+    expect(s.estimatedDelivery).toBeNull();
   });
 
   it("suggests a parcel price from the rate table", async () => {

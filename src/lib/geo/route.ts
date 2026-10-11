@@ -17,8 +17,10 @@ export function markerPosition(t: {
   origin: Place;
   destination: Place;
   status: string;
-  events: { countryCode: string | null }[];
+  events: { countryCode: string | null; lat?: number | null; lng?: number | null }[];
 }): LatLng | null {
+  const latest = t.events.at(-1);
+  if (latest?.lat != null && latest.lng != null) return { lat: latest.lat, lng: latest.lng };
   if (t.status === "DELIVERED") return point(t.destination);
   const country = [...t.events].reverse().find((e) => e.countryCode)?.countryCode?.toUpperCase();
   if (!country) return point(t.origin);

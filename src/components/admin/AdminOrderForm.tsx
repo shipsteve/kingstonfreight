@@ -30,6 +30,7 @@ export function AdminOrderForm({ homeCountry }: { homeCountry: string }) {
   const [arrivalPort, setArrivalPort] = useState("");
   const [departureDate, setDepartureDate] = useState("");
   const [estimatedArrival, setEstimatedArrival] = useState("");
+  const [estimatedDelivery, setEstimatedDelivery] = useState("");
   const [packages, setPackages] = useState<PackageInput[]>([emptyPackage()]);
   const [contents, setContents] = useState("");
   const [declaredValue, setDeclaredValue] = useState("");
@@ -69,6 +70,7 @@ export function AdminOrderForm({ homeCountry }: { homeCountry: string }) {
         arrivalPort,
         departureDate,
         estimatedArrival,
+        estimatedDelivery,
         packages,
         contents,
         declaredValueCents,
@@ -188,6 +190,11 @@ export function AdminOrderForm({ homeCountry }: { homeCountry: string }) {
                 value={estimatedArrival}
                 onChange={(e) => setEstimatedArrival(e.target.value)}
               />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="estimatedDelivery">Estimated delivery date</FieldLabel>
+              <Input id="estimatedDelivery" type="date" min={estimatedArrival || departureDate || undefined}
+                value={estimatedDelivery} onChange={(e) => setEstimatedDelivery(e.target.value)} />
             </Field>
           </FieldGroup>
         </CardContent>

@@ -14,6 +14,7 @@ import { getAdminCounts, listQuotesToPrice } from "@/server/queries/admin";
 import { seed } from "../../prisma/seed";
 import { laAddress, makeUser, nycAddress, parisAddress, resetDb, smallBox } from "./helpers";
 import { asUser } from "./session-mock";
+import { getPublicTracking } from "@/server/tracking";
 
 vi.mock("@/server/session", () => import("./session-mock"));
 vi.mock("@/server/email", () => ({ sendEmail: vi.fn(async () => {}) }));
@@ -137,6 +138,28 @@ describe("admin actions", () => {
   });
 
   describe("shipments", () => {
+    it("publishes confirmed checkpoints and messages without changing an existing tracking ID or transit status", async () => {
+      const s = await makeShipment(customer.id, "IN_TRANSIT");
+      s.trackingNumber = "SHP-ABCD234567";
+      await db.shipment.update({ where: { id: s.id }, data: { trackingNumber: s.trackingNumber } });
+      const result = await updateShipmentStatus({ shipmentId: s.id, status: "IN_TRANSIT", location: "JFK hub", countryCode: "US",
+        lat: 40.6413, lng: -73.7781, note: "Loaded and confirmed by dispatch" });
+      expect(result.ok).toBe(true);
+      const publicTracking = await getPublicTracking(s.trackingNumber);
+      expect(publicTracking).toMatchObject({ trackingNumber: s.trackingNumber, status: "IN_TRANSIT" });
+      expect(publicTracking?.events.at(-1)).toMatchObject({ location: "JFK hub", lat: 40.6413, lng: -73.7781, note: "Loaded and confirmed by dispatch", confirmedAt: expect.any(Date) });
+      expect((await db.shipment.findUniqueOrThrow({ where: { id: s.id } })).trackingNumber).toBe(s.trackingNumber);
+    });
+
+    it("rejects partial or out-of-range map coordinates", async () => {
+      const s = await makeShipment(customer.id, "IN_TRANSIT");
+      const input = { shipmentId: s.id, status: "IN_TRANSIT" as const, location: "Hub" };
+      expect((await updateShipmentStatus({ ...input, lat: 45 })).ok).toBe(false);
+      expect((await updateShipmentStatus({ ...input, lat: 91, lng: 0 })).ok).toBe(false);
+      expect((await updateShipmentStatus({ ...input, lat: 0, lng: -181 })).ok).toBe(false);
+      expect(await db.trackingEvent.count()).toBe(0);
+    });
+
     it("writes an event and emails on a valid status change", async () => {
       const s = await makeShipment(customer.id, "BOOKED");
       const res = await updateShipmentStatus({ shipmentId: s.id, status: "IN_TRANSIT", location: "JFK hub", countryCode: "us" });

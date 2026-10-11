@@ -25,6 +25,8 @@ export function TrackingHeroCard({
   arrivalPort,
   departureDate,
   estimatedArrival,
+  estimatedDelivery,
+  deliveredAt,
   latestLocation,
 }: {
   trackingNumber: string;
@@ -35,6 +37,8 @@ export function TrackingHeroCard({
   arrivalPort: string | null;
   departureDate: Date | null;
   estimatedArrival: Date | null;
+  estimatedDelivery: Date | null;
+  deliveredAt: Date | null;
   latestLocation?: string;
 }) {
   const isDelivered = status === "DELIVERED";
@@ -88,7 +92,7 @@ export function TrackingHeroCard({
         >
           <div className="flex items-center justify-between text-xs font-semibold tracking-wider uppercase">
             <span className={isDelivered ? "text-emerald-700 dark:text-emerald-400" : "text-primary"}>
-              {isDelivered ? "Delivered & Signed" : "Estimated Delivery"}
+              {isDelivered ? "Delivered" : "Estimated Delivery"}
             </span>
             <span
               className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
@@ -98,21 +102,16 @@ export function TrackingHeroCard({
               }`}
             >
               {isDelivered ? <CheckCircle2 className="size-3" /> : <Clock className="size-3" />}
-              {isDelivered ? "Completed" : "On Schedule"}
+              {isDelivered ? "Completed" : estimatedDelivery ? "Estimated" : "Awaiting date"}
             </span>
           </div>
 
           <p className="mt-2 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
-            {estimatedArrival ? (
-              formatShipDate(estimatedArrival)
-            ) : isDelivered ? (
-              "Consignment Handed Over"
-            ) : departureDate ? (
-              `Departs ${formatShipDate(departureDate)}`
-            ) : (
-              "Routing in Progress"
-            )}
+            {isDelivered ? (deliveredAt ? formatShipDate(deliveredAt) : "Delivery confirmed")
+              : estimatedDelivery ? formatShipDate(estimatedDelivery) : "To be confirmed"}
           </p>
+          {estimatedArrival && <p className="mt-2 text-xs text-muted-foreground">Estimated hub arrival: {formatShipDate(estimatedArrival)}</p>}
+          {departureDate && <p className="mt-1 text-xs text-muted-foreground">Departure: {formatShipDate(departureDate)}</p>}
 
           <div className="mt-3 border-t border-border/60 pt-2.5 text-xs text-muted-foreground">
             {departurePort && arrivalPort ? (
@@ -123,7 +122,7 @@ export function TrackingHeroCard({
             ) : (
               <p className="flex items-center gap-1">
                 <CalendarCheck className="size-3.5 text-primary" />
-                Live delivery schedule dynamically synced with port hub
+                Delivery schedule updated by dispatch
               </p>
             )}
           </div>

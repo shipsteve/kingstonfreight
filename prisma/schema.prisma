@@ -227,6 +227,9 @@ model Shipment {
   arrivalPort        String?
   departureDate      DateTime?
   estimatedArrival   DateTime?
+  /// Door delivery to the recipient (arrival = at the airport/port).
+  estimatedDelivery  DateTime?
+  nextStop           String?
   packages           Json?
   actualWeightKg     Float?
   chargeableWeightKg Float?
@@ -257,6 +260,9 @@ model TrackingEvent {
   location    String
   countryCode String?
   note        String?
+  lat         Float?
+  lng         Float?
+  confirmedAt DateTime?
   createdAt   DateTime       @default(now())
 
   @@index([shipmentId])

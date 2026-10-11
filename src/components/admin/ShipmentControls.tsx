@@ -34,6 +34,8 @@ export function StatusUpdateForm({ shipmentId, options }: { shipmentId: string; 
             location: String(f.get("location") ?? ""),
             countryCode: String(f.get("countryCode") ?? ""),
             note: String(f.get("note") ?? ""),
+            lat: f.get("lat") ? Number(f.get("lat")) : undefined,
+            lng: f.get("lng") ? Number(f.get("lng")) : undefined,
           });
           if (!res.ok) return setError(res.error);
           toast.success("Update posted and customer emailed");
@@ -43,7 +45,7 @@ export function StatusUpdateForm({ shipmentId, options }: { shipmentId: string; 
       }}
     >
       <Field>
-        <FieldLabel htmlFor="status">New status</FieldLabel>
+        <FieldLabel htmlFor="status">Shipment status</FieldLabel>
         <select id="status" name="status" className={selectClass} defaultValue={options[0]}>
           {options.map((s) => (
             <option key={s} value={s}>
@@ -57,7 +59,7 @@ export function StatusUpdateForm({ shipmentId, options }: { shipmentId: string; 
         <Input id="location" name="location" placeholder="e.g. JFK hub, New York" required />
       </Field>
       <Field>
-        <FieldLabel htmlFor="countryCode">Country (moves the globe marker)</FieldLabel>
+        <FieldLabel htmlFor="countryCode">Country (approximate location)</FieldLabel>
         <select id="countryCode" name="countryCode" className={selectClass} defaultValue="">
           <option value="">—</option>
           {COUNTRY_OPTIONS.map((c) => (
@@ -68,9 +70,18 @@ export function StatusUpdateForm({ shipmentId, options }: { shipmentId: string; 
         </select>
       </Field>
       <Field>
-        <FieldLabel htmlFor="note">Note (optional, shown publicly)</FieldLabel>
+        <FieldLabel htmlFor="note">Status message (shown publicly)</FieldLabel>
         <Textarea id="note" name="note" rows={1} />
       </Field>
+      <Field>
+        <FieldLabel htmlFor="lat">Confirmed latitude (optional)</FieldLabel>
+        <Input id="lat" name="lat" type="number" step="any" min={-90} max={90} placeholder="e.g. 40.6413" />
+      </Field>
+      <Field>
+        <FieldLabel htmlFor="lng">Confirmed longitude (optional)</FieldLabel>
+        <Input id="lng" name="lng" type="number" step="any" min={-180} max={180} placeholder="e.g. -73.7781" />
+      </Field>
+      <p className="text-xs text-muted-foreground sm:col-span-2">Enter both coordinates to place the confirmed map marker. Posting confirms this update and publishes the location and message on tracking. Keep the same status to add another transit checkpoint.</p>
       {error && (
         <p role="alert" className="text-sm text-destructive sm:col-span-2">
           {error}
@@ -78,7 +89,7 @@ export function StatusUpdateForm({ shipmentId, options }: { shipmentId: string; 
       )}
       <div className="sm:col-span-2">
         <Button type="submit" disabled={pending}>
-          Post update
+          Confirm & publish update
         </Button>
       </div>
     </form>

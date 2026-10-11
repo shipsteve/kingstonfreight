@@ -9,6 +9,7 @@ const MODE_ICON = { AIR: Plane, SEA: Ship, ROAD: Truck } as const;
 export function ScheduleLine({
   departureDate,
   estimatedArrival,
+  estimatedDelivery,
   transportMode,
   departurePort,
   arrivalPort,
@@ -16,12 +17,13 @@ export function ScheduleLine({
 }: {
   departureDate: Date | string | null;
   estimatedArrival: Date | string | null;
+  estimatedDelivery?: Date | string | null;
   transportMode?: TransportMode | null;
   departurePort?: string | null;
   arrivalPort?: string | null;
   className?: string;
 }) {
-  if (!departureDate && !estimatedArrival) return null;
+  if (!departureDate && !estimatedArrival && !estimatedDelivery) return null;
   const Icon = transportMode ? MODE_ICON[transportMode] : CalendarClock;
   const ports = departurePort || arrivalPort ? `${departurePort ?? "—"} → ${arrivalPort ?? "—"}` : null;
   return (
@@ -35,6 +37,7 @@ export function ScheduleLine({
           Estimated arrival <span className="font-medium">{formatShipDate(estimatedArrival)}</span>
         </span>
       )}
+      {estimatedDelivery && <span>Estimated delivery <span className="font-medium">{formatShipDate(estimatedDelivery)}</span></span>}
     </p>
   );
 }

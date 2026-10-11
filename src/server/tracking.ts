@@ -9,12 +9,14 @@ export type PublicTracking = {
   status: ShipmentStatus;
   origin: { city: string; countryCode: string; lat: number | null; lng: number | null };
   destination: { city: string; countryCode: string; lat: number | null; lng: number | null };
-  events: { status: ShipmentStatus; location: string; countryCode: string | null; note: string | null; createdAt: Date }[];
+  events: { status: ShipmentStatus; location: string; countryCode: string | null; note: string | null; createdAt: Date; lat: number | null; lng: number | null; confirmedAt: Date | null }[];
   transportMode: TransportMode | null;
   departurePort: string | null;
   arrivalPort: string | null;
   departureDate: Date | null;
   estimatedArrival: Date | null;
+  estimatedDelivery: Date | null;
+  nextStop: string | null;
 };
 
 /** Public lookup: only city + country, never price or contact details. */
@@ -39,9 +41,11 @@ export async function getPublicTracking(raw: string): Promise<PublicTracking | n
       arrivalPort: true,
       departureDate: true,
       estimatedArrival: true,
+      estimatedDelivery: true,
+      nextStop: true,
       events: {
         orderBy: { createdAt: "asc" },
-        select: { status: true, location: true, countryCode: true, note: true, createdAt: true },
+        select: { status: true, location: true, countryCode: true, note: true, createdAt: true, lat: true, lng: true, confirmedAt: true },
       },
     },
   });
@@ -63,5 +67,7 @@ export async function getPublicTracking(raw: string): Promise<PublicTracking | n
     arrivalPort: s.arrivalPort,
     departureDate: s.departureDate,
     estimatedArrival: s.estimatedArrival,
+    estimatedDelivery: s.estimatedDelivery,
+    nextStop: s.nextStop,
   };
 }

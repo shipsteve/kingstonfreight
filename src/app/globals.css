@@ -224,18 +224,54 @@
 }
 
 /* Receipts (components/receipt/ReceiptView.tsx) */
+.receipt {
+  box-sizing: border-box;
+  width: 80mm;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 4mm;
+  border: 1px solid #d4d4d4;
+  background: #fff;
+  color: #000;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 11px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  box-shadow: 0 2px 8px #0000000d;
+}
+.ticket-heading,
+.ticket-tracking,
+.ticket-footer { text-align: center; }
+.ticket-heading h1 { font-size: 19px; font-weight: 800; }
+.receipt .ticket-section { margin-top: 2mm; padding-top: 2mm; border-top: 1px dashed #777; }
+.ticket-tracking > p:first-of-type { font: bold 17px monospace; letter-spacing: 0.5px; }
+.receipt .ticket-barcode { display: block; width: 100%; height: 12mm; margin: 1.5mm 0; }
+.ticket-barcode svg { display: block; width: 100%; height: 100%; }
+.ticket-row { display: flex; justify-content: space-between; gap: 3mm; padding: 0.4mm 0; }
+.ticket-row > span:first-child { flex: 0 1 48%; }
+.ticket-row > span:last-child { flex: 1 1 52%; min-width: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.ticket-piece { margin-bottom: 1mm; break-inside: avoid; }
+.ticket-piece > p { font-size: 10px; text-align: right; }
+.ticket-total { display: flex; justify-content: space-between; gap: 3mm; margin-top: 2mm; border-top: 1px solid #000; padding-top: 2mm; font-size: 17px; font-weight: 700; }
+.ticket-qr { width: 26mm; height: 26mm; margin: 0 auto 1mm; padding: 1mm; background: #fff; }
+.ticket-qr svg { display: block; width: 100%; height: 100%; }
+.ticket-url { margin-top: 1.5mm; font-size: 9px; }
 .receipt .receipt-label {
   margin-bottom: 0.25rem;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #737373;
+  color: #000;
 }
 
 @media print {
   @page {
     margin: 12mm;
+  }
+  @page receipt-ticket {
+    size: 80mm 200mm;
+    margin: 0;
   }
   html,
   body {
@@ -250,17 +286,30 @@
   nextjs-portal {
     display: none !important;
   }
-  .receipt {
+  html:has(.receipt),
+  body:has(.receipt),
+  body:has(.receipt) *:has(.receipt) {
+    display: block !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  body:has(.receipt) { page: receipt-ticket; }
+  body:has(.receipt) .receipt {
+    width: 80mm !important;
     max-width: none !important;
     border: none !important;
-    padding: 0 !important;
+    padding: 4mm !important;
+    margin: 0 !important;
     box-shadow: none !important;
   }
   .receipt header,
   .receipt footer {
-    display: flex !important;
-  }
-  .receipt footer {
     display: block !important;
+    break-inside: avoid;
   }
+  .receipt h2 { break-after: avoid; }
+  .receipt .ticket-row { break-inside: avoid; }
 }

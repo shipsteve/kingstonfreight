@@ -25,6 +25,10 @@ describe("routeEndpoints", () => {
 });
 
 describe("markerPosition", () => {
+  it("uses the latest exact checkpoint ahead of country-level approximations", () => {
+    expect(markerPosition({ ...base, status: "IN_TRANSIT", events: [{ countryCode: "US", lat: 40.6413, lng: -73.7781 }] }))
+      .toEqual({ lat: 40.6413, lng: -73.7781 });
+  });
   it("sits on the destination city once delivered", () => {
     expect(markerPosition({ ...base, status: "DELIVERED", events: [] })).toEqual(paris);
   });

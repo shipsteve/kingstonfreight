@@ -70,6 +70,7 @@ export default async function DashboardPage() {
                         className="mt-1 text-muted-foreground"
                         departureDate={s.departureDate}
                         estimatedArrival={s.estimatedArrival}
+                        estimatedDelivery={s.estimatedDelivery}
                         transportMode={s.transportMode}
                       />
                     </div>
