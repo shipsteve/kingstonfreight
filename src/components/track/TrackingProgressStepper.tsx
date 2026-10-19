@@ -64,6 +64,7 @@ function getActiveStepIndex(status: ShipmentStatus): number {
     case "PICKED_UP":
       return 1;
     case "IN_TRANSIT":
+    case "REROUTING":
       return 2;
     case "CUSTOMS":
       return 3;
@@ -86,6 +87,7 @@ export function TrackingProgressStepper({
 }) {
   const isCancelled = currentStatus === "CANCELLED";
   const isException = currentStatus === "EXCEPTION";
+  const isRerouting = currentStatus === "REROUTING";
   const activeIdx = getActiveStepIndex(currentStatus);
   const isAllComplete = currentStatus === "DELIVERED";
 
@@ -97,7 +99,24 @@ export function TrackingProgressStepper({
 
   return (
     <div className="rounded-xl border border-border bg-card p-5 shadow-sm sm:p-6" data-testid="tracking-progress-stepper">
-      {/* Alerts for Exception or Cancelled */}
+      {/* Alerts for Rerouting, Exception or Cancelled */}
+      {isRerouting && (
+        <div className="mb-6 flex items-start gap-3 rounded-lg border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-900 dark:text-amber-200">
+          <AlertTriangle className="size-5 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
+          <div className="space-y-1">
+            <p className="font-semibold text-amber-950 dark:text-amber-100">
+              Shipment Paused – Address Correction & Rerouting in Progress
+            </p>
+            <p className="text-xs opacity-90 leading-relaxed">
+              This order had an incorrect address so the item has been paused and is being rerouted to the correct address.
+            </p>
+            <p className="text-xs font-semibold text-amber-800 dark:text-amber-300 pt-0.5">
+              * Note: Rerouting comes with an additional cost, which will be communicated once the item is ready to reroute.
+            </p>
+          </div>
+        </div>
+      )}
+
       {isException && (
         <div className="mb-6 flex items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3.5 text-sm text-amber-700 dark:text-amber-400">
           <AlertTriangle className="size-5 shrink-0 text-amber-600 dark:text-amber-400" />

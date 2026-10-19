@@ -6,6 +6,7 @@ import { TrackingGlobe } from "@/components/track/TrackingGlobe";
 import { TrackingHeroCard } from "@/components/track/TrackingHeroCard";
 import { TrackingProgressStepper } from "@/components/track/TrackingProgressStepper";
 import { TrackingQuickActions } from "@/components/track/TrackingQuickActions";
+import { TrackingReroutingNotice } from "@/components/track/TrackingReroutingNotice";
 import { TrackingRouteCard } from "@/components/track/TrackingRouteCard";
 import { TrackingTransitCard } from "@/components/track/TrackingTransitCard";
 import { clientIp } from "@/server/client-ip";
@@ -52,6 +53,11 @@ export default async function TrackingPage({ params }: { params: Promise<{ numbe
         deliveredAt={t.status === "DELIVERED" ? t.events.find((e) => e.status === "DELIVERED")?.createdAt ?? null : null}
         latestLocation={latest?.location}
       />
+
+      {/* Rerouting Notice Card (Wrong Address & Additional Cost Information) */}
+      {t.status === "REROUTING" && (
+        <TrackingReroutingNotice trackingNumber={t.trackingNumber} />
+      )}
 
       {/* 5-Stage Visual Progress Pipeline */}
       <TrackingProgressStepper currentStatus={t.status} events={t.events} />

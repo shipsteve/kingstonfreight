@@ -1,7 +1,7 @@
 "use client";
 
 import type { ShipmentStatus } from "@prisma/client";
-import { CheckCircle2, Circle, TriangleAlert } from "lucide-react";
+import { CheckCircle2, Circle, TriangleAlert, RotateCcw } from "lucide-react";
 import { MotionConfig, motion } from "motion/react";
 import { STATUS_LABELS } from "@/lib/tracking/labels";
 
@@ -24,7 +24,8 @@ export function StatusTimeline({ events }: { events: TimelineEvent[] }) {
       <ol className="relative space-y-6">
         {ordered.map((e, i) => {
           const latest = i === 0;
-          const Icon = e.status === "EXCEPTION" ? TriangleAlert : latest ? CheckCircle2 : Circle;
+          const isRerouting = e.status === "REROUTING";
+          const Icon = e.status === "EXCEPTION" ? TriangleAlert : isRerouting ? RotateCcw : latest ? CheckCircle2 : Circle;
           return (
             <motion.li
               key={`${e.status}-${String(e.createdAt)}-${i}`}
@@ -38,7 +39,13 @@ export function StatusTimeline({ events }: { events: TimelineEvent[] }) {
               )}
               <Icon
                 className={`relative mt-0.5 size-6 shrink-0 ${
-                  e.status === "EXCEPTION" ? "text-destructive" : latest ? "text-primary" : "text-muted-foreground"
+                  e.status === "EXCEPTION"
+                    ? "text-destructive"
+                    : isRerouting
+                    ? "text-amber-600 dark:text-amber-400"
+                    : latest
+                    ? "text-primary"
+                    : "text-muted-foreground"
                 }`}
                 aria-hidden
               />

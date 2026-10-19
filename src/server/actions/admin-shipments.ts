@@ -21,6 +21,7 @@ const STATUSES = [
   "DELIVERED",
   "EXCEPTION",
   "CANCELLED",
+  "REROUTING",
 ] as const;
 
 const statusSchema = z.object({

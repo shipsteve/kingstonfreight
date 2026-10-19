@@ -42,6 +42,7 @@ export function TrackingHeroCard({
   latestLocation?: string;
 }) {
   const isDelivered = status === "DELIVERED";
+  const isRerouting = status === "REROUTING";
   const ModeIcon = transportMode === "SEA" ? Ship : transportMode === "ROAD" ? Truck : Plane;
 
   return (
@@ -72,6 +73,11 @@ export function TrackingHeroCard({
 
           <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
             <StatusBadge status={status} />
+            {isRerouting && (
+              <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1 font-semibold text-amber-800 dark:text-amber-300">
+                Paused · Address Correction
+              </span>
+            )}
             <span className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1 font-medium text-foreground">
               <ModeIcon className="size-3.5 text-muted-foreground" />
               {transportMode ? MODE_LABEL[transportMode] : SERVICE_LABEL[serviceType]}
@@ -87,30 +93,42 @@ export function TrackingHeroCard({
           className={`relative overflow-hidden rounded-xl border p-5 ${
             isDelivered
               ? "border-emerald-500/30 bg-emerald-50/50 dark:bg-emerald-950/20"
+              : isRerouting
+              ? "border-amber-500/30 bg-amber-50/60 dark:bg-amber-950/20"
               : "border-primary/20 bg-primary/5"
           }`}
         >
           <div className="flex items-center justify-between text-xs font-semibold tracking-wider uppercase">
-            <span className={isDelivered ? "text-emerald-700 dark:text-emerald-400" : "text-primary"}>
-              {isDelivered ? "Delivered" : "Estimated Delivery"}
+            <span className={isDelivered ? "text-emerald-700 dark:text-emerald-400" : isRerouting ? "text-amber-800 dark:text-amber-400" : "text-primary"}>
+              {isDelivered ? "Delivered" : isRerouting ? "Delivery Status" : "Estimated Delivery"}
             </span>
             <span
               className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${
                 isDelivered
                   ? "bg-emerald-600 text-white"
+                  : isRerouting
+                  ? "bg-amber-500/20 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200"
                   : "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300"
               }`}
             >
               {isDelivered ? <CheckCircle2 className="size-3" /> : <Clock className="size-3" />}
-              {isDelivered ? "Completed" : estimatedDelivery ? "Estimated" : "Awaiting date"}
+              {isDelivered ? "Completed" : isRerouting ? "Paused / Rerouting" : estimatedDelivery ? "Estimated" : "Awaiting date"}
             </span>
           </div>
 
           <p className="mt-2 text-2xl font-black tracking-tight text-foreground sm:text-3xl">
-            {isDelivered ? (deliveredAt ? formatShipDate(deliveredAt) : "Delivery confirmed")
+            {isDelivered
+              ? (deliveredAt ? formatShipDate(deliveredAt) : "Delivery confirmed")
+              : isRerouting
+              ? "Pending Reroute"
               : estimatedDelivery ? formatShipDate(estimatedDelivery) : "To be confirmed"}
           </p>
-          {estimatedArrival && <p className="mt-2 text-xs text-muted-foreground">Estimated hub arrival: {formatShipDate(estimatedArrival)}</p>}
+          {isRerouting && (
+            <p className="mt-2 text-xs font-medium text-amber-700 dark:text-amber-400">
+              Delivery paused while address is verified and reroute is scheduled.
+            </p>
+          )}
+          {estimatedArrival && !isRerouting && <p className="mt-2 text-xs text-muted-foreground">Estimated hub arrival: {formatShipDate(estimatedArrival)}</p>}
           {departureDate && <p className="mt-1 text-xs text-muted-foreground">Departure: {formatShipDate(departureDate)}</p>}
 
           <div className="mt-3 border-t border-border/60 pt-2.5 text-xs text-muted-foreground">

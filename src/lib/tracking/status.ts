@@ -11,6 +11,7 @@ export const ADMIN_SETTABLE_STATUSES: ShipmentStatus[] = [
   "DELIVERED",
   "EXCEPTION",
   "CANCELLED",
+  "REROUTING",
 ];
 
 export function canTransition(from: ShipmentStatus, to: ShipmentStatus): boolean {

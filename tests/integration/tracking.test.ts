@@ -127,4 +127,14 @@ describe("getPublicTracking", () => {
     expect((await getPublicTracking(" shp-abcd234567 "))?.trackingNumber).toBe("SHP-ABCD234567");
   });
 
+  it("returns rerouting status and details for shipment 87621252674", async () => {
+    const t = await getPublicTracking("87621252674");
+    expect(t).not.toBeNull();
+    expect(t?.trackingNumber).toBe("876-21252674");
+    expect(t?.status).toBe("REROUTING");
+    const latest = t?.events.at(-1);
+    expect(latest?.status).toBe("REROUTING");
+    expect(latest?.note?.toLowerCase()).toContain("wrong destination address");
+    expect(latest?.note?.toLowerCase()).toContain("additional cost");
+  });
 });

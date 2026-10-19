@@ -12,6 +12,7 @@ const TONE: Record<ShipmentStatus, string> = {
   DELIVERED: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
   EXCEPTION: "bg-red-500/15 text-red-700 dark:text-red-300",
   CANCELLED: "bg-muted text-muted-foreground",
+  REROUTING: "bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30",
 };
 
 export function StatusBadge({ status, className }: { status: ShipmentStatus; className?: string }) {

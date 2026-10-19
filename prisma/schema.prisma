@@ -40,6 +40,7 @@ enum ShipmentStatus {
   DELIVERED
   EXCEPTION
   CANCELLED
+  REROUTING
 }
 
 enum PaymentMethod {

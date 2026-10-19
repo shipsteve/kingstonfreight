@@ -9,4 +9,5 @@ export const STATUS_LABELS: Record<ShipmentStatus, string> = {
   DELIVERED: "Delivered",
   EXCEPTION: "Delivery exception",
   CANCELLED: "Cancelled",
+  REROUTING: "Rerouting",
 };
