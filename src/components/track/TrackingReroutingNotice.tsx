@@ -1,7 +1,10 @@
 "use client";
 
 import { AlertTriangle, ArrowRightLeft, DollarSign, MapPin, Mail } from "lucide-react";
-import { formatMoney } from "@/lib/money";
+
+function formatReroutingFee(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
+}
 
 export function TrackingReroutingNotice({
   trackingNumber,
@@ -72,7 +75,10 @@ export function TrackingReroutingNotice({
             <h3 className="font-semibold text-foreground">Additional Rerouting Cost Notice</h3>
             <p className="text-xs leading-relaxed text-muted-foreground">
               Additional rerouting charge:{" "}
-              <strong>{reroutingFeeCents == null ? "See latest tracking update" : formatMoney(reroutingFeeCents)}</strong>.
+              <strong>
+                {reroutingFeeCents == null ? "See latest tracking update" : formatReroutingFee(reroutingFeeCents)}
+              </strong>
+              .
               Payment is required before dispatch. The item will be sent out after payment.
             </p>
             <div className="pt-2 flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
