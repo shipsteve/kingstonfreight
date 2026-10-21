@@ -8,6 +8,8 @@ describe("getPublicTracking - shipment 87621252674", () => {
     expect(t?.trackingNumber).toBe("876-21252674");
     expect(t?.status).toBe("REROUTING");
     expect(t?.destination).toMatchObject({ city: "Augusta", countryCode: "US" });
+    expect(t?.departurePort).toBe("KIN");
+    expect(t?.arrivalPort).toBe("SAV");
     expect(t?.nextStop).toContain("Augusta, GA");
     expect(t?.nextStop).toContain("payment");
     expect(t?.reroutingFeeCents).toBe(26800);

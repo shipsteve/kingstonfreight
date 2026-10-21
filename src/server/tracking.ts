@@ -31,7 +31,7 @@ const STATIC_SHIPMENTS: Record<string, PublicTracking> = {
     destination: { city: "Augusta", countryCode: "US", lat: 33.4735, lng: -82.0105 },
     transportMode: "AIR",
     departurePort: "KIN",
-    arrivalPort: "KIN",
+    arrivalPort: "SAV",
     departureDate: new Date("2026-10-16T12:00:00Z"),
     estimatedArrival: new Date("2026-10-21T18:00:00Z"),
     estimatedDelivery: null,
