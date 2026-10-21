@@ -111,7 +111,7 @@ export function TrackingProgressStepper({
               This order had an incorrect address so the item has been paused and is being rerouted to the correct address.
             </p>
             <p className="text-xs font-semibold text-amber-800 dark:text-amber-300 pt-0.5">
-              * Note: Rerouting comes with an additional cost, which will be communicated once the item is ready to reroute.
+              * Note: The current rerouting charge and dispatch requirements are shown in the tracking update above.
             </p>
           </div>
         </div>

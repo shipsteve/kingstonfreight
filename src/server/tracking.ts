@@ -17,6 +17,9 @@ export type PublicTracking = {
   estimatedArrival: Date | null;
   estimatedDelivery: Date | null;
   nextStop: string | null;
+  reroutingFeeCents: number | null;
+  reroutingAddress: string | null;
+  originAddress: string | null;
 };
 
 const STATIC_SHIPMENTS: Record<string, PublicTracking> = {
@@ -24,55 +27,28 @@ const STATIC_SHIPMENTS: Record<string, PublicTracking> = {
     trackingNumber: "876-21252674",
     serviceType: "PARCEL",
     status: "REROUTING",
-    origin: { city: "New York", countryCode: "US", lat: 40.7128, lng: -74.006 },
-    destination: { city: "Kingston", countryCode: "JM", lat: 17.9714, lng: -76.7936 },
+    origin: { city: "Kingston", countryCode: "JM", lat: 17.9714, lng: -76.7936 },
+    destination: { city: "Augusta", countryCode: "US", lat: 33.4735, lng: -82.0105 },
     transportMode: "AIR",
-    departurePort: "JFK",
+    departurePort: "KIN",
     arrivalPort: "KIN",
     departureDate: new Date("2026-10-16T12:00:00Z"),
     estimatedArrival: new Date("2026-10-21T18:00:00Z"),
     estimatedDelivery: null,
-    nextStop: "Kingston Central Sorting Hub (Hold for Reroute)",
+    nextStop: "Augusta, GA (Dispatch after payment)",
+    reroutingFeeCents: 26800,
+    reroutingAddress: "420 E Boundary, Augusta, GA 30901, Apt 0315",
+    originAddress: "4th Avenue, Newport West, Kingston, Jamaica",
     events: [
       {
-        status: "BOOKED",
-        location: "KingstonFreight Cargo Operations, New York, NY",
-        countryCode: "US",
-        note: "Consignment booking registered & air waybill generated.",
-        createdAt: new Date("2026-10-15T09:30:00Z"),
-        lat: 40.7128,
-        lng: -74.006,
-        confirmedAt: new Date("2026-10-15T09:30:00Z"),
-      },
-      {
-        status: "PICKED_UP",
-        location: "JFK International Air Cargo Facility, Queens, NY",
-        countryCode: "US",
-        note: "Screened and loaded into air freight container.",
-        createdAt: new Date("2026-10-16T11:15:00Z"),
-        lat: 40.6413,
-        lng: -73.7781,
-        confirmedAt: new Date("2026-10-16T11:15:00Z"),
-      },
-      {
-        status: "IN_TRANSIT",
-        location: "Departed JFK · Flight Linehaul Transit",
-        countryCode: "US",
-        note: "In transit on flight KF-204 to Norman Manley International Airport (KIN).",
-        createdAt: new Date("2026-10-17T08:00:00Z"),
-        lat: 28.5383,
-        lng: -75.5,
-        confirmedAt: new Date("2026-10-17T08:00:00Z"),
-      },
-      {
         status: "REROUTING",
-        location: "Kingston Central Sorting & Distribution Hub",
-        countryCode: "JM",
-        note: "Consignment paused: Wrong destination address recorded. Item is currently held at the hub and being rerouted to the correct address. Please note: Rerouting is subject to an additional cost, which will be communicated once the item is ready to reroute.",
-        createdAt: new Date("2026-10-18T14:20:00Z"),
-        lat: 17.9714,
-        lng: -76.7936,
-        confirmedAt: new Date("2026-10-18T14:20:00Z"),
+        location: "Augusta, GA",
+        countryCode: "US",
+        note: "Reroute destination updated to 420 E Boundary, Augusta, GA 30901, Apt 0315. The additional rerouting charge is $268.00 and must be paid before dispatch. The item will be sent out after payment.",
+        createdAt: new Date("2026-10-21T09:17:46-07:00"),
+        lat: 33.4735,
+        lng: -82.0105,
+        confirmedAt: new Date("2026-10-21T09:17:46-07:00"),
       },
     ],
   },
@@ -133,6 +109,9 @@ export async function getPublicTracking(raw: string): Promise<PublicTracking | n
         estimatedArrival: s.estimatedArrival,
         estimatedDelivery: s.estimatedDelivery,
         nextStop: s.nextStop,
+        reroutingFeeCents: null,
+        reroutingAddress: null,
+        originAddress: null,
       };
     }
   } catch (err) {

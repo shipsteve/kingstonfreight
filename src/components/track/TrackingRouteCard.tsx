@@ -5,12 +5,14 @@ import { ArrowRight, Plane, Ship, Truck, MapPin } from "lucide-react";
 
 export function TrackingRouteCard({
   origin,
+  originAddress,
   destination,
   transportMode,
   departurePort,
   arrivalPort,
 }: {
   origin: { city: string; countryCode: string };
+  originAddress: string | null;
   destination: { city: string; countryCode: string };
   serviceType: ServiceType;
   transportMode: TransportMode | null;
@@ -35,6 +37,7 @@ export function TrackingRouteCard({
           </div>
           <p className="text-base font-bold text-foreground sm:text-lg">{shortPlace(origin)}</p>
           <p className="text-xs text-muted-foreground">{countryName(origin.countryCode)}</p>
+          {originAddress && <p className="max-w-40 text-xs text-muted-foreground">{originAddress}</p>}
           {departurePort && (
             <span className="inline-block mt-1 rounded bg-muted px-2 py-0.5 font-mono text-[11px] font-semibold text-foreground">
               Port: {departurePort}

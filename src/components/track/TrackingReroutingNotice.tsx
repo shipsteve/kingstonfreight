@@ -1,11 +1,20 @@
 "use client";
 
 import { AlertTriangle, ArrowRightLeft, DollarSign, MapPin, Mail } from "lucide-react";
+import { formatMoney } from "@/lib/money";
 
-export function TrackingReroutingNotice({ trackingNumber }: { trackingNumber: string }) {
+export function TrackingReroutingNotice({
+  trackingNumber,
+  reroutingFeeCents,
+  reroutingAddress,
+}: {
+  trackingNumber: string;
+  reroutingFeeCents: number | null;
+  reroutingAddress: string | null;
+}) {
   const emailSubject = encodeURIComponent(`Address Correction & Reroute Request - Waybill ${trackingNumber}`);
   const emailBody = encodeURIComponent(
-    `Hello KingstonFreight Dispatch Support,\n\nI am contacting you regarding my paused shipment (Waybill: ${trackingNumber}).\n\nI would like to verify and provide the corrected delivery destination address for this consignment:\n\n- Correct Recipient Name:\n- Correct Delivery Address:\n- City / Parish / State:\n- Contact Phone:\n\nPlease confirm receipt and let me know the additional rerouting costs once the item is ready.\n\nThank you.`
+    `Hello KingstonFreight Dispatch Support,\n\nI am contacting you regarding my paused shipment (Waybill: ${trackingNumber}).\n\nPlease confirm the payment instructions for the rerouting charge and let me know when the updated delivery address details will be available.\n\nThank you.`
   );
   const emailUrl = `mailto:admin@kingstonfreight.com?subject=${emailSubject}&body=${emailBody}`;
 
@@ -44,7 +53,8 @@ export function TrackingReroutingNotice({ trackingNumber }: { trackingNumber: st
             <h3 className="font-semibold text-foreground">Delivery Paused for Address Correction</h3>
             <p className="text-xs leading-relaxed text-muted-foreground">
               This shipment was flagged with an <strong>incorrect destination address</strong> upon terminal scan.
-              To prevent misdelivery, the consignment has been paused and is actively being rerouted to the correct address.
+              The new rerouting destination is{" "}
+              <strong>{reroutingAddress ?? "shown in the latest tracking update"}</strong>.
             </p>
             <div className="pt-2 flex items-center gap-1.5 font-mono text-[11px] text-amber-700 dark:text-amber-300">
               <MapPin className="size-3.5" />
@@ -61,8 +71,9 @@ export function TrackingReroutingNotice({ trackingNumber }: { trackingNumber: st
           <div className="space-y-1.5 text-sm">
             <h3 className="font-semibold text-foreground">Additional Rerouting Cost Notice</h3>
             <p className="text-xs leading-relaxed text-muted-foreground">
-              Address modification and airway carrier rerouting incur an <strong>additional service fee</strong>.
-              The exact rerouting cost will be calculated and <strong>communicated once the item is processed and ready to reroute</strong>.
+              Additional rerouting charge:{" "}
+              <strong>{reroutingFeeCents == null ? "See latest tracking update" : formatMoney(reroutingFeeCents)}</strong>.
+              Payment is required before dispatch. The item will be sent out after payment.
             </p>
             <div className="pt-2 flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
               <span>Payment will be settled before final carrier handoff</span>

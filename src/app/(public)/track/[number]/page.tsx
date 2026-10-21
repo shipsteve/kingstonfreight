@@ -56,7 +56,11 @@ export default async function TrackingPage({ params }: { params: Promise<{ numbe
 
       {/* Rerouting Notice Card (Wrong Address & Additional Cost Information) */}
       {t.status === "REROUTING" && (
-        <TrackingReroutingNotice trackingNumber={t.trackingNumber} />
+        <TrackingReroutingNotice
+          trackingNumber={t.trackingNumber}
+          reroutingFeeCents={t.reroutingFeeCents}
+          reroutingAddress={t.reroutingAddress}
+        />
       )}
 
       {/* 5-Stage Visual Progress Pipeline */}
@@ -72,6 +76,7 @@ export default async function TrackingPage({ params }: { params: Promise<{ numbe
           {/* Detailed Route Card */}
           <TrackingRouteCard
             origin={t.origin}
+            originAddress={t.originAddress}
             destination={t.destination}
             serviceType={t.serviceType}
             transportMode={t.transportMode}
